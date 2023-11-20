@@ -1,8 +1,9 @@
 # Description
-My project will perhaps be about racing eh...
+1.My project will perhaps be about racing eh...
+2.Maybe continue the Tank game but make it much better
 
 ## Needs to have
-- Car
+- Car | Tank
 - Physics
 - Levels
 - AI
