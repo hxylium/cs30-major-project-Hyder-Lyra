@@ -1,11 +1,11 @@
 # Description
-1.My project will perhaps be about F1 Racing 2D
-2.Tank Game Online Multiplayer 3D
+- My project will perhaps be about F1 Racing 2D
+- Tank Game Online Multiplayer 3D
 
 ## Needs to have
 ### F1:
 - Physics:
--- we
+- - we
 - Levels
 - AI
 - Online Multiplayer
