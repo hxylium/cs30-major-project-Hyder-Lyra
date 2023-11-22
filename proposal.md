@@ -1,5 +1,6 @@
 # Description
-## F1 Racing | AI/Online Multiplayer
+## F1 Racing | AI/Online Multiplayer | Hyder Ahmed & Lyra
+### Were planning on 
 
 ## Needs to have
 ### F1:
@@ -25,6 +26,7 @@
     - Graphics should look good and should have different tracks, real F1 tracks (Spa, Bahrain...)
     - Sand and road should ave different densities and affect how th ecar drive and feels on each patch
     - Top down view should follow the car on the track
+    - Start screen thats neat
 
 - Sounds:
     - Car sounds
