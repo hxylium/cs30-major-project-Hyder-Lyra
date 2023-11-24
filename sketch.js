@@ -49,3 +49,5 @@ function draw() {
   p1.move();
   p1.display();  
 }
+
+// const smth = WebSocket("");
