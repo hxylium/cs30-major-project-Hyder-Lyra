@@ -24,5 +24,12 @@
 
   <body>
     <script src="sketch.js"></script>
+    <script>
+      const ws = new WebSocket("ws://localhost:8082");
+
+      ws.addEventListener("open", () => {
+      console.log("Connected!");
+    });
+    </script>
   </body>
 </html>
