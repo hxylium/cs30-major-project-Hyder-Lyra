@@ -28,8 +28,14 @@
       const ws = new WebSocket("ws://localhost:8082");
 
       ws.addEventListener("open", () => {
-      console.log("Connected!");
-    });
+        console.log("Connected!");
+
+        ws.send("Hey u lot, hows it goin bruv!");
+      });
+
+      ws.addEventListener("message", ({ data }) => {
+        console.log(data);
+      });
     </script>
   </body>
 </html>
