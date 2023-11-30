@@ -7,8 +7,10 @@ let cheese;
 function setup() {
   createCanvas(windowWidth, windowHeight);
   cheese = new Sprite();
-  cheese.rotation = 20
+  cheese.rotation = 0;
   cheese.accel = 2;
+  cheese.drag = 2;
+  cheese.rotationDrag = 2;
   // cheese.w = 40;
   // cheese.h = 50;
   // cheese.rotation = 0;
@@ -18,14 +20,33 @@ function setup() {
 
 function draw() {
   clear();
-  cheese.rotateTowards(mouse, 0.1,0);
-  if (kb.pressing('up')){
-    console.log(cheese.vel.y += cheese.accel*Math.sin(cheese.rotation));
-    cheese.vel.x += cheese.accel*Math.cos(cheese.rotation);
+  
+  if (kb.pressing('left')){
+    cheese.rotationSpeed = 2;
   }
+  if (kb.pressing('right')){
+    cheese.rotationSpeed = -2;
+  }
+  // cheese.bearing = -1*cheese.rotation;
+  cheese.bearing = -90;
+
+  // else {
+  //   cheese.rotationSpeed -= 
+  // }
+  if (kb.pressing('up')){
+    // console.log(Math.sin(cheese.rotation));
+    // cheese.vel.y += cheese.accel*Math.sin(cheese.bearing);
+    // cheese.vel.x += cheese.accel*Math.cos(cheese.rotation);
+    cheese.applyForce(5);
+  }
+  // else{
+  //   cheese.vel.y =0;
+  //   cheese.vel.x = 0;
+  // }
   if (kb.pressing('space')){
-    cheese.vel.y -= cheese.accel/2*Math.sin(cheese.rotation);
-    cheese.vel.x -= cheese.accel/2*Math.cos(cheese.rotation);
+    // cheese.vel.y -= cheese.accel/2*Math.sin(cheese.rotation);
+    // cheese.vel.x -= cheese.accel/2*Math.cos(cheese.rotation);
+    cheese.applyForce(-5);
   }
   
   if (cheese.vel.y !== 0){
@@ -40,10 +61,12 @@ function draw() {
     cheese.vel.y = cheese.vel.y/percent;
     cheese.vel.x = cheese.vel.x/percent;
   }
-  console.log(cheese.x, cheese.y);
+  // console.log(cheese.x, cheese.y);
   // cheese.vel.y*7/8
   
 }
+
+// function ()
 
 class Car{
   contructor(){
