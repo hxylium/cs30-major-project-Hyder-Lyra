@@ -10,7 +10,7 @@ function setup() {
   cheese.h = 40;
   cheese.w = 80;
   // cheese.rotation = 0;
-  cheese.offset.x = 30;
+  cheese.offset.x = cheese.w - (cheese.h+cheese.h/4);
   cheese.move = 0;
   cheese.turn = 0;
   cheese.drag = 1;
@@ -26,29 +26,43 @@ function setup() {
 function draw() {
   clear();
   
-  
-  cheese.turn -= toZero(cheese.turn);
   // cheese.move = 0;
-  cheese.turn = 0;
+  // cheese.turn = 0;
+  cheese.bare = cheese.rotation-360;
   // map(Math.abs(cheese.vel.x)+Math.abs(cheese.vel.y),0,20,0,3)
   if (Math.abs(cheese.vel.x)+Math.abs(cheese.vel.y) > 0){
-    if (kb.pressing('left')){
-      cheese.turn -= 1;
+    if((!keyIsDown(16)||(Math.abs(cheese.vel.x)+Math.abs(cheese.vel.y) > 1.5))){
+      if (keyIsDown(65)){
+        cheese.turn -= 1;
+        cheese.bearing = cheese.bare-90;
+      // cheese.applyForce(1);
+      }
+      if (keyIsDown(68)){
+        cheese.turn += 1;
+        cheese.bearing = cheese.bare+90;
+        // cheese.applyForce(1);
+      }
     }
-    if (kb.pressing('right')){
-      cheese.turn += 1;
+    else {
+      console.log("handbrake stopped turning");
     }
   }
   cheese.rotationSpeed = cheese.turn;
 
-
   cheese.bearing = cheese.rotation-360;
-
+  // gas
   if (keyIsDown(87)){
     cheese.move += 20;
   }
-  if (kb.pressing('space')){
-    cheese.move -= 10;
+  // brake
+  if (keyIsDown(32)){
+    cheese.move -= 5;
+  }
+  // handbrake
+  if (keyIsDown(16)){
+    for (let i = 0; i < 20; i++){
+      cheese.move -= toZero(cheese.move);
+    }
   }
   
   cheese.applyForce(cheese.move);
@@ -56,12 +70,21 @@ function draw() {
     cheese.move =0;
   }
   else {
-    cheese.move -= toZero(cheese.move);
+    cheese.move -= toZero(cheese.move)*10**-5;
   }
+
+  cheese.turn -= toZero(cheese.turn)*10**0;
+  // if (keyIsDown(16)){
+  //   cheese.turn -= toZero(cheese.turn)*10**3;
+  // }
 }
 
 function toZero(number){
-  return number/Math.abs(number);
+  if (number !== 0){
+    return number/Math.abs(number);
+  }
+  return number;
+  
 }
 
 class Car{
