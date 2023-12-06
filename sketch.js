@@ -10,11 +10,14 @@ let stringcheese;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
+  noStroke()
   ratio = smallest();
-  cheesewheel = new Sprite(100,0);
-  cheesewheel.r = 20;
-  cheese = new Car();
-  stringcheese = new DistanceJoint(cheese.body, cheesewheel);
+  cheese = new Car(width/2,height/2, 19,16,23,19);
+  // cheesewheel = new Sprite(cheese.body.x-cheese.body.w-10,cheese.body.y);
+  // cheesewheel.r = 20;
+  // stringcheese = new DistanceJoint(cheese.body, cheesewheel);
+  // stringcheese.springiness = 1;
+  // stringcheese.offsetA.x = -20;
 }
 
 
@@ -27,77 +30,22 @@ function draw() {
   // drive(mozarella);
 }
 
-let turn = 0;
-let move = 0;
-function drive(car){
-  if (Math.abs(car.vel.x)+Math.abs(car.vel.y) > 0){
-    if((!keyIsDown(16)||(Math.abs(car.vel.x)+Math.abs(car.vel.y) > 1.5))){
-      if (keyIsDown(65)){
-        turn -= 1;
-      // cheese.bearing = cheese.bare-90;
-      // cheese.applyForce(1);
-      }
-      if (keyIsDown(68)){
-        turn += 1;
-      // cheese.bearing = cheese.bare+90;
-      // cheese.applyForce(1);
-      }
-    // cheese.turn += toZero(cheese.turn)*;
-    }
-  // else {
-  //   console.log("handbrake stopped turning");
-  // }
-  }
-  car.rotationSpeed = turn;
-
-  // cheese.bearing = cheese.rotation-360;
-  // gas
-  if (keyIsDown(87)){
-    move += 10;
-  }
-  // brake
-  if (keyIsDown(32)){
-    move -= toZero(move)*2;
-    move -= 5;
-
-  }
-  // handbrake
-  if (keyIsDown(16)){
-    console.log("handbrake!!");
-    for (let i = 0; i < 1; i++){
-      car.speed -= toZero(car.speed)*10**-1;
-    }
-  }
-
-  car.bearing = car.rotation-360;
-
-  car.applyForce(move);
-  if (keyIsDown(87)||keyIsDown(32)){
-    move =0;
-  }
-  else {
-  // cheese.move -= toZero(cheese.move)*10**-6;
-  }
-
-  turn -= toZero(turn)*10**0;
-// if (keyIsDown(16)){
-//   cheese.turn -= toZero(cheese.turn)*10**3;
-// }
-}
-
-
 class Car{
-  constructor(){
-    this.body = new Sprite();
-    this.body.w = 40;
-    this.body.h = 20;
+  constructor(x,y,facelength,facewidth,backlength,backwidth){
+    this.body = new Sprite(x-backlength/2,y);
+    this.body.w = backlength;
+    this.body.h = backwidth;
     this.body.drag = 2;
     this.body.rotationDrag =2;
-    // this.body.rotationSpeed = 0;
-    // this.body.vel = {x:0, y:0};
+    this.face = new Sprite(x+facelength/2,y);
+    this.face.w = facelength;
+    this.face.h = facewidth;
+    this.face.drag = 2;
+    this.face.rotationDrag =2;
+    this.midsec = new GlueJoint(this.body,this.face);
     this.move = 0;
     this.turn = 0;
-    // this.coloour = "red";
+    
   }
 
   drive() {
@@ -105,8 +53,9 @@ class Car{
   // cheese.turn = 0;
   // cheese.bare = cheese.rotation-360;
   // map(Math.abs(cheese.vel.x)+Math.abs(cheese.vel.y),0,20,0,3)
-    if (Math.abs(this.body.vel.x)+Math.abs(this.body.vel.y) > 0){
+    if (Math.abs(this.body.vel.x)+Math.abs(this.body.vel.y) > 0.5){
       if((!keyIsDown(16)||(Math.abs(this.body.vel.x)+Math.abs(this.body.vel.y) > 1.5))){
+
         if (keyIsDown(65)){
           this.turn -= 1;
         // cheese.bearing = cheese.bare-90;
@@ -153,7 +102,7 @@ class Car{
     // cheese.move -= toZero(cheese.move)*10**-6;
     }
 
-    this.turn -= toZero(this.turn)*10**0;
+    this.turn -= toZero(this.turn);
   // if (keyIsDown(16)){
   //   cheese.turn -= toZero(cheese.turn)*10**3;
   // }

@@ -49,6 +49,7 @@
     "globals": {
       "Sprite": true,
       "DistanceJoint": true,
+      "GlueJoint": true,
       "world": true,
       "width": true,
       "height": true,
