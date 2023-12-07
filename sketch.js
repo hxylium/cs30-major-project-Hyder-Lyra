@@ -10,24 +10,43 @@ let stringcheese;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  noStroke()
+  // noStroke()
   ratio = smallest();
-  cheese = new Car(width/2,height/2, 19,16,23,19);
-  // cheesewheel = new Sprite(cheese.body.x-cheese.body.w-10,cheese.body.y);
+  // cheesewheel = new Sprite(width/2,height/2,cheese.body.y);
+  cheese = new TowT(width/2,height/2, 12, 20, 20, 16);
+  
   // cheesewheel.r = 20;
+  // // strokeWeight(1);
   // stringcheese = new DistanceJoint(cheese.body, cheesewheel);
   // stringcheese.springiness = 1;
-  // stringcheese.offsetA.x = -20;
+  // stringcheese.offsetA.x = -1*cheese.body.w/2;
 }
 
 
 function draw() {
   // clear();
   
-  cheese.drive();
+  cheese.vehicle.drive();
   // cheese.display();
 
-  // drive(mozarella);
+
+}
+
+
+class TowT{
+  constructor(x,y,facelength,facewidth,bodylength,bodywidth){
+    this.vehicle = new Car(x,y,facelength,facewidth,bodylength,bodywidth);
+    this.arm = new Sprite(x-bodylength-facelength*4/9,y);
+    this.arm.w = facelength*2/3;
+    this.arm.h = 1;
+    this.armbase = new GlueJoint(this.arm,this.vehicle.body);
+    this.object = new Sprite(x-bodylength-this.arm.w*2,y);
+    this.object.radius = facelength/3;
+    this.object.drag = 1;
+    this.towline = new DistanceJoint(this.arm,this.object);
+    this.towline.offsetA.x = -1*this.arm.w/2;
+    this.towline.springiness = 0.5;
+  }
 }
 
 class Car{
@@ -35,8 +54,8 @@ class Car{
     this.body = new Sprite(x-backlength/2,y);
     this.body.w = backlength;
     this.body.h = backwidth;
-    this.body.drag = 2;
-    this.body.rotationDrag =2;
+    // this.body.drag = 1;
+    // this.body.rotationDrag =1;
     this.face = new Sprite(x+facelength/2,y);
     this.face.w = facelength;
     this.face.h = facewidth;
