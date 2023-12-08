@@ -1,4 +1,4 @@
-let pos = {x: 0, y: 0}
+let pos = {x: 0, y: 0};
 
 function preload() {
   // connect to a p5party server
