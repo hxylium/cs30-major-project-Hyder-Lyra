@@ -39,7 +39,7 @@ class TowT{
     this.facewidth = 20;
     this.bodylength = 20;
     this.bodywidth = 16;
-    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9, 4, 0.7);
+    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9, 5, 0.7);
     this.arm = new Sprite(x-this.bodylength-this.facelength*4/9,y);
     this.arm.w = this.facelength*2/3;
     this.arm.h = 1;
@@ -63,10 +63,13 @@ class Sport{
     this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 12, 5, 2.5);
     this.front = new GlueJoint(this.bumper,this.vehicle.face);
   }
+  handbrake(){
+    // stuff
+  }
 }
 
 class Car{
-  constructor(x,y,facelength,facewidth,backlength,backwidth, acceleration, braking, handling){
+  constructor(x,y,facelength,facewidth,backlength,backwidth, acceleration, braking, handling, thing){
     this.body = new Sprite(x-backlength/2,y);
     this.body.w = backlength;
     this.body.h = backwidth;
@@ -75,7 +78,7 @@ class Car{
     this.face = new Sprite(x+facelength/2,y);
     this.face.w = facelength;
     this.face.h = facewidth;
-    this.face.drag = 2.5;
+    this.face.drag = 5;
     this.face.rotationDrag = 2;
     this.midsec = new GlueJoint(this.body,this.face);
     this.move = 0;
@@ -83,7 +86,9 @@ class Car{
     this.acceleration = acceleration;
     this.braking = braking;
     this.handling = handling;
-    
+  }
+
+  special(){
   }
 
   drive() {
