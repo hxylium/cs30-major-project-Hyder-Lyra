@@ -13,7 +13,7 @@ function setup() {
   // noStroke()
   ratio = smallest();
   // cheesewheel = new Sprite(width/2,height/2,cheese.body.y);
-  cheese = new TowT(width/2,height/2, 12, 20, 20, 16);
+  cheese = new TowT(width/2,height/2);
   
   // cheesewheel.r = 20;
   // // strokeWeight(1);
@@ -34,36 +34,55 @@ function draw() {
 
 
 class TowT{
-  constructor(x,y,facelength,facewidth,bodylength,bodywidth){
-    this.vehicle = new Car(x,y,facelength,facewidth,bodylength,bodywidth);
-    this.arm = new Sprite(x-bodylength-facelength*4/9,y);
-    this.arm.w = facelength*2/3;
+  constructor(x,y){
+    this.facelength = 12;
+    this.facewidth = 20;
+    this.bodylength = 20;
+    this.bodywidth = 16;
+    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9, 4, 0.7);
+    this.arm = new Sprite(x-this.bodylength-this.facelength*4/9,y);
+    this.arm.w = this.facelength*2/3;
     this.arm.h = 1;
     this.armbase = new GlueJoint(this.arm,this.vehicle.body);
-    this.object = new Sprite(x-bodylength-this.arm.w*2,y);
-    this.object.radius = facelength/3;
+    this.object = new Sprite(x-this.bodylength-this.arm.w*2,y);
+    this.object.radius = this.facelength/3;
     this.object.drag = 1;
     this.towline = new DistanceJoint(this.arm,this.object);
     this.towline.offsetA.x = -1*this.arm.w/2;
     this.towline.springiness = 0.5;
   }
 }
+class Sport{
+  constructor(x,y){
+    this.facelength = 14;
+    this.facewidth = 19;
+    this.bodylength = 16;
+    this.bodywidth = 20;
+    this.bumper = new Sprite(x+this.facelength,y);
+    this.bumper.d = this.facewidth;
+    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 12, 5, 2.5);
+    this.front = new GlueJoint(this.bumper,this.vehicle.face);
+  }
+}
 
 class Car{
-  constructor(x,y,facelength,facewidth,backlength,backwidth){
+  constructor(x,y,facelength,facewidth,backlength,backwidth, acceleration, braking, handling){
     this.body = new Sprite(x-backlength/2,y);
     this.body.w = backlength;
     this.body.h = backwidth;
-    // this.body.drag = 1;
-    // this.body.rotationDrag =1;
+    this.body.drag = 1;
+    this.body.rotationDrag = 2;
     this.face = new Sprite(x+facelength/2,y);
     this.face.w = facelength;
     this.face.h = facewidth;
-    this.face.drag = 2;
-    this.face.rotationDrag =2;
+    this.face.drag = 2.5;
+    this.face.rotationDrag = 2;
     this.midsec = new GlueJoint(this.body,this.face);
     this.move = 0;
     this.turn = 0;
+    this.acceleration = acceleration;
+    this.braking = braking;
+    this.handling = handling;
     
   }
 
@@ -76,12 +95,12 @@ class Car{
       if((!keyIsDown(16)||(Math.abs(this.body.vel.x)+Math.abs(this.body.vel.y) > 1.5))){
 
         if (keyIsDown(65)){
-          this.turn -= 1;
+          this.turn -= this.handling;
         // cheese.bearing = cheese.bare-90;
         // cheese.applyForce(1);
         }
         if (keyIsDown(68)){
-          this.turn += 1;
+          this.turn += this.handling;
         // cheese.bearing = cheese.bare+90;
         // cheese.applyForce(1);
         }
@@ -96,12 +115,12 @@ class Car{
 
     // gas
     if (keyIsDown(87)){
-      this.move += 10;
+      this.move += this.acceleration/10;
     }
     // brake
     if (keyIsDown(32)){
-      this.move -= toZero(this.move)*2;
-      this.move -= 5;
+      this.move -= toZero(this.move)*this.braking-3;
+      this.move -= this.braking;
 
     }
     // handbrake
@@ -109,19 +128,27 @@ class Car{
       for (let i = 0; i < 20; i++){
         this.move -= toZero(this.move);
       }
+      this.body.speed -= toZero(this.body.speed)*10**-1;
+      console.log("handbrake");
     }
 
     this.body.bearing = this.body.rotation-360;
   
     this.body.applyForce(this.move);
     if (keyIsDown(87)||keyIsDown(32)){
-      this.move =0;
+      // this.move =0;
     }
-    else {
-    // cheese.move -= toZero(cheese.move)*10**-6;
+    // else {
+    
+    // }
+    // if (this.move > 0){
+    this.move -= toZero(this.move)*10**-1;
+    // }
+    // console.log(this.move);
+    if(this.move > 10){
+      this.move = 10;
     }
-
-    this.turn -= toZero(this.turn);
+    this.turn -= toZero(this.turn)*this.handling;
   // if (keyIsDown(16)){
   //   cheese.turn -= toZero(cheese.turn)*10**3;
   // }
