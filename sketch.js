@@ -1,53 +1,33 @@
-// Major Project, F1 Racing
-// Your Name
-// Date
-//
-// Extra for Experts:
-// - describe what you did to take this project "above and beyond"
+let pos = { x: 0, y: 0 };
 
-class Player{
-  constructor(name, x, y, color){
-    this.name = name;
-    this.x = x;
-    this.y = y;
-    this.color = color;
-    this.speed = 10;
-  }
-
-  move(){
-    if (keyIsDown(87)){
-      this.y -= this.speed;
-    }
-    if (keyIsDown(65)){
-      this.x -= this.speed;
-    }
-    if (keyIsDown(83)){
-      this.y += this.speed;
-    }
-    if (keyIsDown(68)){
-      this.x += this.speed;
-    }
-  }
-
-  display(){
-    noStroke();
-    fill(this.color);
-    // text(this.name, this.x, this.y);
-    circle(this.x, this.y, 69);
-  }
+function preload() {
+  // connect to a p5party server
+  partyConnect(
+    "wss://demoserver.p5party.org",
+    "Testing_F1",
+    // `${random(0, 100)}`
+    "Room1",
+    connected_f1()
+  );
+  
+  // tell p5.party to sync the pos object
+  pos = partyLoadShared("pos", pos);
 }
 
-let p1;
-
 function setup() {
-  createCanvas(windowWidth, windowHeight);
-  p1 = new Player("lolsies", 100, 100, color(random(255), random(255), random(255)));
+  createCanvas(400, 400);
 }
 
 function draw() {
-  background(220);
-  p1.move();
-  p1.display();  
+  background(50);
+  ellipse(pos.x, pos.y, 100, 100);
 }
 
-// const smth = WebSocket("");
+function mousePressed() {
+  pos.x = mouseX;
+  pos.y = mouseY;
+}
+
+function connected_f1(){
+  console.log("Connection Established!");
+}

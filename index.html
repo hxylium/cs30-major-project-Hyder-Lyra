@@ -20,22 +20,10 @@
     <!-- <script src="libraries/p5.min.js"></script> -->
 
     <script src="libraries/p5.sound.min.js"></script>
+    <script src="libraries/p5.party.js"></script>
   </head>
 
   <body>
     <script src="sketch.js"></script>
-    <script>
-      const ws = new WebSocket("ws://localhost:8082");
-
-      ws.addEventListener("open", () => {
-        console.log("Connected!");
-
-        ws.send("Hey u lot, hows it goin bruv!");
-      });
-
-      ws.addEventListener("message", ({ data }) => {
-        console.log(data);
-      });
-    </script>
   </body>
 </html>
