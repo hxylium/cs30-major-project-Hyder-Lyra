@@ -3,10 +3,11 @@
 
 
 let cheese;
+let dummy;
 let ratio;
+let everything = [];
 
-let cheesewheel;
-let stringcheese;
+
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -14,6 +15,7 @@ function setup() {
   ratio = smallest();
   // cheesewheel = new Sprite(width/2,height/2,cheese.body.y);
   cheese = new TowT(width/2,height/2);
+  dummy = new TowT(width/3, height/3);
   
   // cheesewheel.r = 20;
   // // strokeWeight(1);
@@ -29,8 +31,22 @@ function draw() {
   cheese.vehicle.drive();
   // cheese.display();
 
-
+  for (let circle of balls.list){
+    circle.radius -= growthrate/2;
+    if (circle.radius < circle.smallest){
+      circle.radius = circle.smallest;
+    }
+  }
 }
+
+
+// TowT related things
+let growthrate = 0.5;
+let maxsize = 20;
+let balls = {
+  list: [],
+  count: 0,
+};
 
 
 class TowT{
@@ -39,18 +55,33 @@ class TowT{
     this.facewidth = 20;
     this.bodylength = 20;
     this.bodywidth = 16;
-    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9, 5, 0.7);
+    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9, 5, 0.7, this.grow);
     this.arm = new Sprite(x-this.bodylength-this.facelength*4/9,y);
     this.arm.w = this.facelength*2/3;
     this.arm.h = 1;
+    everything.push(this.arm);
     this.armbase = new GlueJoint(this.arm,this.vehicle.body);
     this.object = new Sprite(x-this.bodylength-this.arm.w*2,y);
     this.object.radius = this.facelength/3;
     this.object.drag = 1;
+    this.object.smallest = this.facelength/3;
+    balls.list.push(this.object);
+    this.vehicle.id = balls.count;
+    balls.count +=1;
     this.towline = new DistanceJoint(this.arm,this.object);
     this.towline.offsetA.x = -1*this.arm.w/2;
-    this.towline.springiness = 0.5;
+    this.towline.springiness = 0.6;
+    
   }
+
+  grow(){
+    if (balls.list[this.id].radius < maxsize){
+      balls.list[this.id].radius += growthrate;
+    }
+    
+  }
+
+
 }
 class Sport{
   constructor(x,y){
@@ -60,11 +91,44 @@ class Sport{
     this.bodywidth = 20;
     this.bumper = new Sprite(x+this.facelength,y);
     this.bumper.d = this.facewidth;
-    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 12, 5, 2.5);
+    everything.push(this.bumper);
+    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 12, 5, 2.5, this.handbrake);
     this.front = new GlueJoint(this.bumper,this.vehicle.face);
   }
   handbrake(){
-    // stuff
+    // handbrake
+    for (let i = 0; i < 20; i++){
+      this.move -= toZero(this.move);
+    }
+    this.body.speed -= toZero(this.body.speed)*10**-1;
+    console.log("handbrake");
+  }
+}
+class Delor{
+  constructor(x,y){
+    this.facelength = 14;
+    this.facewidth = 19;
+    this.bodylength = 16;
+    this.bodywidth = 20;
+    // this.bumper = new Sprite(x+this.facelength,y);
+    // this.bumper.d = this.facewidth;
+    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 12, 5, 2.5, this.blink);
+    this.vehicle.phased = false;
+    // this.front = new GlueJoint(this.bumper,this.vehicle.face);
+  }
+
+  blink(){
+    if (this.phased === false){
+      console.log("blinked");
+      this.phased = true;
+      for (let item of everything){
+        this.body.overlaps(item);
+        this.face.overlaps(item);
+      }
+    }
+    // else {
+    //   this.body.layer = 1;
+    // }
   }
 }
 
@@ -75,20 +139,24 @@ class Car{
     this.body.h = backwidth;
     this.body.drag = 1;
     this.body.rotationDrag = 2;
+    everything.push(this.body);
     this.face = new Sprite(x+facelength/2,y);
     this.face.w = facelength;
     this.face.h = facewidth;
     this.face.drag = 5;
     this.face.rotationDrag = 2;
+    everything.push(this.face);
     this.midsec = new GlueJoint(this.body,this.face);
     this.move = 0;
     this.turn = 0;
     this.acceleration = acceleration;
     this.braking = braking;
     this.handling = handling;
+    this.thing = thing;
   }
 
   special(){
+    this.thing();
   }
 
   drive() {
@@ -128,13 +196,8 @@ class Car{
       this.move -= this.braking;
 
     }
-    // handbrake
     if (keyIsDown(16)){
-      for (let i = 0; i < 20; i++){
-        this.move -= toZero(this.move);
-      }
-      this.body.speed -= toZero(this.body.speed)*10**-1;
-      console.log("handbrake");
+      this.special();
     }
 
     this.body.bearing = this.body.rotation-360;
