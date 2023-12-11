@@ -1,15 +1,17 @@
-let pos = {x: 0, y: 0};
+let pos = { x: 0, y: 0 };
 
 function preload() {
   // connect to a p5party server
   partyConnect(
     "wss://demoserver.p5party.org",
-    "hello_party"
+    "Testing_F1",
+    // `${random(0, 100)}`
+    "Room1",
+    connected_f1()
   );
   
   // tell p5.party to sync the pos object
   pos = partyLoadShared("pos", pos);
-  
 }
 
 function setup() {
@@ -24,4 +26,8 @@ function draw() {
 function mousePressed() {
   pos.x = mouseX;
   pos.y = mouseY;
+}
+
+function connected_f1(){
+  console.log("Connection Established!");
 }
