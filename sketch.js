@@ -14,8 +14,8 @@ function setup() {
   // noStroke()
   ratio = smallest();
   // cheesewheel = new Sprite(width/2,height/2,cheese.body.y);
-  cheese = new TowT(width/2,height/2);
-  dummy = new TowT(width/3, height/3);
+  cheese = new Sport(width/2,height/2);
+  dummy = new Delor(width/3, height/3);
   
   // cheesewheel.r = 20;
   // // strokeWeight(1);
@@ -26,17 +26,11 @@ function setup() {
 
 
 function draw() {
-  // clear();
+  clear();
   
   cheese.vehicle.drive();
   // cheese.display();
 
-  for (let circle of balls.list){
-    circle.radius -= growthrate/2;
-    if (circle.radius < circle.smallest){
-      circle.radius = circle.smallest;
-    }
-  }
 }
 
 
@@ -55,7 +49,7 @@ class TowT{
     this.facewidth = 20;
     this.bodylength = 20;
     this.bodywidth = 16;
-    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9, 5, 0.7, this.grow);
+    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 8.5, 11.5, 2, 0.7, this.grow, this.shrink);
     this.arm = new Sprite(x-this.bodylength-this.facelength*4/9,y);
     this.arm.w = this.facelength*2/3;
     this.arm.h = 1;
@@ -71,14 +65,19 @@ class TowT{
     this.towline = new DistanceJoint(this.arm,this.object);
     this.towline.offsetA.x = -1*this.arm.w/2;
     this.towline.springiness = 0.6;
-    
   }
-
   grow(){
     if (balls.list[this.id].radius < maxsize){
+      // console.log("grow");
       balls.list[this.id].radius += growthrate;
     }
     
+  }
+  shrink(){
+    if (balls.list[this.id].radius > balls.list[this.id].smallest){
+      // console.log("shrink");
+      balls.list[this.id].radius -= growthrate/2;
+    }
   }
 
 
@@ -92,8 +91,9 @@ class Sport{
     this.bumper = new Sprite(x+this.facelength,y);
     this.bumper.d = this.facewidth;
     everything.push(this.bumper);
-    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 12, 5, 2.5, this.handbrake);
+    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 12, 3, 2.5, this.handbrake, this.unhandbrake);
     this.front = new GlueJoint(this.bumper,this.vehicle.face);
+    this.vehicle.handbrake = false;
   }
   handbrake(){
     // handbrake
@@ -103,37 +103,62 @@ class Sport{
     this.body.speed -= toZero(this.body.speed)*10**-1;
     console.log("handbrake");
   }
+  unhandbrake(){
+    if(this.hanbrake === true){
+      this.handbrake = false;
+    }
+  }
 }
 class Delor{
   constructor(x,y){
-    this.facelength = 14;
+    this.facelength = 19;
     this.facewidth = 19;
-    this.bodylength = 16;
+    this.bodylength = 17;
     this.bodywidth = 20;
     // this.bumper = new Sprite(x+this.facelength,y);
     // this.bumper.d = this.facewidth;
-    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 12, 5, 2.5, this.blink);
+    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11.5, 4.5, 1.5, this.blink, this.cooldown);
     this.vehicle.phased = false;
+    this.vehicle.timer = 0;
     // this.front = new GlueJoint(this.bumper,this.vehicle.face);
   }
 
   blink(){
-    if (this.phased === false){
-      console.log("blinked");
-      this.phased = true;
-      for (let item of everything){
-        this.body.overlaps(item);
-        this.face.overlaps(item);
+    if (!this.phased){
+      if(this.timer <=0){
+        this.phased = true;
+        this.timer = 0;
+        for (let item of everything){
+          this.body.overlaps(item);
+          this.face.overlaps(item);
+        }
+        console.log("blinked");
       }
     }
-    // else {
-    //   this.body.layer = 1;
-    // }
+  }
+  cooldown(){
+    if(this.phased){
+      this.timer ++;
+      if (this.timer >= 300){
+        this.phased = false;
+        for (let item of everything){
+          this.body.collides(item);
+          this.face.collides(item);
+        }
+        console.log("unblinked");
+      }
+    }
+    else{
+      this.timer --;
+      if (this.timer <=0){
+        console.log("recharged");
+      }
+    }
   }
 }
 
 class Car{
-  constructor(x,y,facelength,facewidth,backlength,backwidth, acceleration, braking, handling, thing){
+  constructor(x,y,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2){
     this.body = new Sprite(x-backlength/2,y);
     this.body.w = backlength;
     this.body.h = backwidth;
@@ -150,22 +175,23 @@ class Car{
     this.move = 0;
     this.turn = 0;
     this.acceleration = acceleration;
+    this.maxspeed = maxspeed;
     this.braking = braking;
     this.handling = handling;
     this.thing = thing;
+    this.thing2 = thing2;
   }
 
   special(){
     this.thing();
   }
+  specialCleanup(){
+    this.thing2();
+  }
 
   drive() {
-    // cheese.move = 0;
-  // cheese.turn = 0;
-  // cheese.bare = cheese.rotation-360;
-  // map(Math.abs(cheese.vel.x)+Math.abs(cheese.vel.y),0,20,0,3)
-    if (Math.abs(this.body.vel.x)+Math.abs(this.body.vel.y) > 0.5){
-      if((!keyIsDown(16)||(Math.abs(this.body.vel.x)+Math.abs(this.body.vel.y) > 1.5))){
+    if (Math.abs(this.body.vel.x)+Math.abs(this.body.vel.y) > 0.2){
+      if((this.hanbrake === false||(Math.abs(this.body.vel.x)+Math.abs(this.body.vel.y) > 1.5))){
 
         if (keyIsDown(65)){
           this.turn -= this.handling;
@@ -183,19 +209,24 @@ class Car{
     //   console.log("handbrake stopped turning");
     // }
     }
+    
     this.body.rotationSpeed = this.turn;
-
+    //special cleanup
+    if (this.thing2 !== null){
+      this.specialCleanup();
+    }
 
     // gas
     if (keyIsDown(87)){
-      this.move += this.acceleration/10;
+      this.move += this.acceleration/60;
     }
     // brake
     if (keyIsDown(32)){
-      this.move -= toZero(this.move)*this.braking-3;
-      this.move -= this.braking;
+      this.move -= toZero(this.move)*this.braking/5;
+      this.move -= this.braking/2;
 
     }
+    // special ability
     if (keyIsDown(16)){
       this.special();
     }
@@ -213,13 +244,14 @@ class Car{
     this.move -= toZero(this.move)*10**-1;
     // }
     // console.log(this.move);
-    if(this.move > 10){
-      this.move = 10;
+    if(this.move > this.maxspeed){
+      console.log("hitmax");
+      this.move = this.maxspeed;
+    }
+    if (this.move < -1*this.maxspeed/2){
+      this.move = -1*this.maxspeed/2;
     }
     this.turn -= toZero(this.turn)*this.handling;
-  // if (keyIsDown(16)){
-  //   cheese.turn -= toZero(cheese.turn)*10**3;
-  // }
   }
 
   // display(){
