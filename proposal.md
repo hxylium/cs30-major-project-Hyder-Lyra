@@ -1,6 +1,6 @@
 # Description
 ## Drifting Game | AI/Online Multiplayer | Hyder Ahmed & Lyra
-### We're making a drifting game where the player can either play with his friends online through a P5.party demo server or alone (single player) with Ai. The physics and multiplayer are our main focus where Lyra is working on the Physics with P5.play and Hyder is working on the multiplayer and the setup of the game. In ecsense, Lyra is Back-End and Hyder is Front-End.
+### We're making a drifting game where the player can either play with his friends online through a P5.party demo server or alone (single player) with Ai. The physics and multiplayer are our main focus where Lyra is working on the Physics with P5.play and Hyder is working on the multiplayer and the setup of the game. In essence, Lyra is Back-End and Hyder is Front-End.
 
 ## Needs to have
 ### Drifting:
