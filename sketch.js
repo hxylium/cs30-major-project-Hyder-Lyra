@@ -1,4 +1,7 @@
 /* eslint-disable no-undef */
+
+pos = {x: random(width),
+       y: random(height)};
 class Player{
   constructor(name, x, y, color){
     this.name = name;
@@ -22,18 +25,6 @@ class Player{
       this.x += this.speed;
     }
   }
-
-  display(x, y, colour){
-    noStroke();
-    fill(colour);
-    // text(this.name, this.x, this.y);
-    circle(x, y, 69);
-  }
-
-  update(){
-    pos.x = this.x;
-    pos.y = this.y;
-  }
 }
 
 let p1;
@@ -41,21 +32,28 @@ let p1;
 function setup() {
   createCanvas(400, 400);
   p1 = new Player("lolsies", random(width), random(height), "white");
-  pos = {
-    x: p1.x,
-    y: p1.y,
-    colour: p1.color
-  };
 }
 
 
 function draw() {
   background(50);
-  p1.display(pos.x, pos.y, pos.colour);
   p1.move();
-  p1.update();
+  update();
+  display();
 }
 
 function connected_f1(){
   console.log("Connection Established!");
+}
+
+function display(){
+  noStroke();
+  fill("white");
+  // text(this.name, this.x, this.y);
+  circle(pos.x, pos.y, 69);
+}
+
+function update(){
+  pos.x = this.x;
+  pos.y = this.y;
 }
