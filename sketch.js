@@ -7,6 +7,7 @@ let dummy;
 let ratio;
 let everything = [];
 
+let wall;
 
 
 function setup() {
@@ -14,8 +15,10 @@ function setup() {
   // noStroke()
   ratio = smallest();
   // cheesewheel = new Sprite(width/2,height/2,cheese.body.y);
-  cheese = new Sport(width/2,height/2);
+  cheese = new TowT(width/2,height/2);
   dummy = new Delor(width/3, height/3);
+  wall = new Sprite(width/4,height/4)
+  wall.collider = 'static';
   
   // cheesewheel.r = 20;
   // // strokeWeight(1);
@@ -26,7 +29,7 @@ function setup() {
 
 
 function draw() {
-  clear();
+  // clear();
   
   cheese.vehicle.drive();
   // cheese.display();
@@ -49,7 +52,7 @@ class TowT{
     this.facewidth = 20;
     this.bodylength = 20;
     this.bodywidth = 16;
-    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 8.5, 11.5, 2, 0.7, this.grow, this.shrink);
+    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 8.5, 11.5, 2, 1.7, this.grow, this.shrink);
     this.arm = new Sprite(x-this.bodylength-this.facelength*4/9,y);
     this.arm.w = this.facelength*2/3;
     this.arm.h = 1;
@@ -58,6 +61,7 @@ class TowT{
     this.object = new Sprite(x-this.bodylength-this.arm.w*2,y);
     this.object.radius = this.facelength/3;
     this.object.drag = 1;
+    this.object.bounciness = 2;
     this.object.smallest = this.facelength/3;
     balls.list.push(this.object);
     this.vehicle.id = balls.count;
@@ -84,12 +88,14 @@ class TowT{
 }
 class Sport{
   constructor(x,y){
-    this.facelength = 14;
+    this.facelength = 15;
     this.facewidth = 19;
     this.bodylength = 16;
     this.bodywidth = 20;
     this.bumper = new Sprite(x+this.facelength,y);
     this.bumper.d = this.facewidth;
+    this.bumper.drag = 2.5;
+    this.bumper.bounciness = 0.8
     everything.push(this.bumper);
     this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 12, 3, 2.5, this.handbrake, this.unhandbrake);
     this.front = new GlueJoint(this.bumper,this.vehicle.face);
@@ -111,13 +117,13 @@ class Sport{
 }
 class Delor{
   constructor(x,y){
-    this.facelength = 19;
+    this.facelength = 15;
     this.facewidth = 19;
-    this.bodylength = 17;
+    this.bodylength = 23;
     this.bodywidth = 20;
     // this.bumper = new Sprite(x+this.facelength,y);
     // this.bumper.d = this.facewidth;
-    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11.5, 4.5, 1.5, this.blink, this.cooldown);
+    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11.5, 4.5, 2.3, this.blink, this.cooldown);
     this.vehicle.phased = false;
     this.vehicle.timer = 0;
     // this.front = new GlueJoint(this.bumper,this.vehicle.face);
@@ -162,14 +168,16 @@ class Car{
     this.body = new Sprite(x-backlength/2,y);
     this.body.w = backlength;
     this.body.h = backwidth;
-    this.body.drag = 1;
-    this.body.rotationDrag = 2;
+    this.body.drag = 2;
+    this.body.rotationDrag = 3;
+    this.body.bounciness = 0.8;
     everything.push(this.body);
     this.face = new Sprite(x+facelength/2,y);
     this.face.w = facelength;
     this.face.h = facewidth;
-    this.face.drag = 5;
+    this.face.drag = 2.5;
     this.face.rotationDrag = 2;
+    this.face.bounciness = 0.8;
     everything.push(this.face);
     this.midsec = new GlueJoint(this.body,this.face);
     this.move = 0;
@@ -190,7 +198,7 @@ class Car{
   }
 
   drive() {
-    if (Math.abs(this.body.vel.x)+Math.abs(this.body.vel.y) > 0.2){
+    if (Math.abs(this.body.vel.x)+Math.abs(this.body.vel.y) > 0){
       if((this.hanbrake === false||(Math.abs(this.body.vel.x)+Math.abs(this.body.vel.y) > 1.5))){
 
         if (keyIsDown(65)){
@@ -210,7 +218,8 @@ class Car{
     // }
     }
     
-    this.body.rotationSpeed = this.turn;
+    // this.body.rotationSpeed += this.turn/6;
+    this.body.applyTorque(this.turn/10);
     //special cleanup
     if (this.thing2 !== null){
       this.specialCleanup();
@@ -222,8 +231,10 @@ class Car{
     }
     // brake
     if (keyIsDown(32)){
-      this.move -= toZero(this.move)*this.braking/5;
-      this.move -= this.braking/2;
+      if (toZero(this.move) === 1){
+        this.move -= toZero(this.move)*this.braking/5;
+      }
+      this.move -= this.acceleration/(60);
 
     }
     // special ability
@@ -251,7 +262,8 @@ class Car{
     if (this.move < -1*this.maxspeed/2){
       this.move = -1*this.maxspeed/2;
     }
-    this.turn -= toZero(this.turn)*this.handling;
+    // this.turn -= toZero(this.turn)*this.handling;
+    this.turn = 0;
   }
 
   // display(){
