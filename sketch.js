@@ -6,25 +6,23 @@ let cheese;
 let dummy;
 let ratio;
 let everything = [];
+let objects = [];
 
-let wall;
-
+let divider;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   // noStroke()
   ratio = smallest();
-  // cheesewheel = new Sprite(width/2,height/2,cheese.body.y);
-  cheese = new TowT(width/2,height/2);
-  dummy = new Delor(width/3, height/3);
-  wall = new Sprite(width/4,height/4)
-  wall.collider = 'static';
+  ratio = ratio/20;
   
-  // cheesewheel.r = 20;
-  // // strokeWeight(1);
-  // stringcheese = new DistanceJoint(cheese.body, cheesewheel);
-  // stringcheese.springiness = 1;
-  // stringcheese.offsetA.x = -1*cheese.body.w/2;
+  cheese = new Delor(width*2/3,height*2/3);
+  objects.push(cheese);
+  // dummy = new Delor(width/3, height/3);
+  divider = new Wall(width/2,height/2,70,10);
+  objects.push(divider);
+  
+  
 }
 
 
@@ -32,8 +30,13 @@ function draw() {
   // clear();
   
   cheese.vehicle.drive();
-  // cheese.display();
-
+  cheese.display(true);
+  divider.display();
+  // for (let item of objects){
+  //   if (item === cheese){
+  //     item.display()
+  //   }
+  // }
 }
 
 
@@ -84,7 +87,10 @@ class TowT{
     }
   }
 
-
+  display(playerTrue){
+    // todo
+    this.vehicle.display(playerTrue);
+  }
 }
 class Sport{
   constructor(x,y){
@@ -113,6 +119,10 @@ class Sport{
     if(this.hanbrake === true){
       this.handbrake = false;
     }
+  }
+  display(playerTrue){
+    // todo
+    this.vehicle.display(playerTrue);
   }
 }
 class Delor{
@@ -161,6 +171,10 @@ class Delor{
       }
     }
   }
+
+  display(playerTrue){
+    this.vehicle.display(playerTrue);
+  }
 }
 
 class Car{
@@ -195,6 +209,10 @@ class Car{
   }
   specialCleanup(){
     this.thing2();
+  }
+
+  carCenter(){
+    return {x:(this.body.x+this.face.x)/2, y: (this.body.y+this.face.y)/2};
   }
 
   drive() {
@@ -266,20 +284,63 @@ class Car{
     this.turn = 0;
   }
 
-  // display(){
-  //   fill(this.coolour);
-  //   noStroke();
+  display(playerTrue){
+    // fill(this.coolour);
+    // noStroke();
+    let babybell = cheese.vehicle.carCenter();
+    if (playerTrue){
+      push();
+      translate(width/2,height/2);
+      rotate(this.body.rotation);
+      rectMode(CENTER);
+      rect((babybell.x -this.body.x)*ratio, (babybell.y -this.body.y)*ratio,this.body.w*ratio,this.body.h*ratio);
+      // rect(0+this.body.w/2,0,this.body.w*ratio,this.body.h*ratio);
+      pop();
+      push();
+      translate(width/2,height/2);
+      rotate(this.face.rotation);
+      rectMode(CENTER);
+      rect((babybell.x -this.face.x)*ratio, (babybell.y -this.face.y)*ratio,this.face.w*ratio,this.face.h*ratio);
+      // rect(0+this.face.w/2,0,this.face.w*ratio,this.face.h*ratio);
+      pop();
+    }
+    else {
+      push();
+      translate((babybell.x + this.body.x)*ratio, (babybell.y + this.body.y)*ratio);
+      rotate(cheese.vehicle.face.rotation + this.body.rotation);
+      rectMode(CENTER);
+      rect(0,0,this.body.w*ratio,this.body.h*ratio);
+      pop();
+      push();
+      translate((babybell.x + this.face.x)*ratio, (babybell.y + this.face.y)*ratio);
+      rotate(cheese.vehicle.face.rotation + this.face.rotation);
+      rectMode(CENTER);
+      rect(0,0,this.face.w*ratio,this.face.h*ratio);
+      pop();
+    }
     
-  //   push();
-  //   translate(this.body.x*ratio,this.body.y*ratio);
-  //   rotate(this.angle);
-  //   rectMode(CENTER);
-  //   rect(0,0,this.length*ratio,this.width*ratio);
-  //   pop();
-  //   // fill("black");
-  //   // circle(this.body.x*ratio+this.carface.x*3.5, this.body.y*ratio+this.carface.y*3.5, this.length/this.width*5);
-  // }
+  }
 }
+
+
+class Wall{
+  constructor(x,y,width,height){
+    this.cement = new Sprite(x,y,width,height);
+    this.cement.collider = "static";
+    everything.push(this.cement);
+  }
+
+  display(){
+    rectMode(CENTER);
+    let babybell = cheese.vehicle.carCenter();
+    push();
+    translate((babybell.x + this.cement.x)*ratio, (babybell.y + this.cement.y)*ratio);
+    rotate( this.cement.rotation); //cheese.vehicle.face.rotation +
+    rect(0,0,this.cement.width*ratio,this.cement.height*ratio);
+    pop();
+  }
+}
+
 
 function toZero(number){
   if (number !== 0){
@@ -290,11 +351,13 @@ function toZero(number){
 }
 function smallest(){
   let smoll;
-  if (windowHeight/20 < windowWidth/35){
-    smoll = windowHeight/20;
+  let wide = 40;
+  let tall = 70;
+  if (windowHeight/wide < windowWidth/tall){
+    smoll = windowHeight/wide;
   } 
   else{
-    smoll = windowWidth/35;
+    smoll = windowWidth/tall;
   }
   return smoll;
 }
