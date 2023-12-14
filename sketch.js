@@ -1,7 +1,5 @@
 /* eslint-disable no-undef */
 
-pos = {x: random(width),
-       y: random(height)};
 class Player{
   constructor(name, x, y, color){
     this.name = name;
@@ -25,9 +23,15 @@ class Player{
       this.x += this.speed;
     }
   }
+
+  update(){
+    pos.x = this.x;
+    pos.y = this.y;
+    console.log(this.name, pos.x, pos.y);
+  }
 }
 
-let p1;
+let p1, smth;
 
 function setup() {
   createCanvas(400, 400);
@@ -38,7 +42,11 @@ function setup() {
 function draw() {
   background(50);
   p1.move();
-  update();
+  smth = frameRate();
+  if (smth/2 === 30){
+    console.log("smj");
+    p1.update();
+  }
   display();
 }
 
@@ -49,11 +57,5 @@ function connected_f1(){
 function display(){
   noStroke();
   fill("white");
-  // text(this.name, this.x, this.y);
-  circle(pos.x, pos.y, 69);
-}
-
-function update(){
-  pos.x = this.x;
-  pos.y = this.y;
+  circle(p1.x, p1.y, 69);
 }
