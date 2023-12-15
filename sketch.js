@@ -27,14 +27,16 @@ class Player{
   update(){
     pos.x = this.x;
     pos.y = this.y;
-    console.log(this.name, pos.x, pos.y);
+    console.log(pos.x, pos.y);
   }
 }
 
 let p1, smth;
+let t1;
 
 function setup() {
   createCanvas(400, 400);
+  t1 = millis();
   p1 = new Player("lolsies", random(width), random(height), "white");
 }
 
@@ -43,11 +45,16 @@ function draw() {
   background(50);
   p1.move();
   smth = frameRate();
-  if (smth/2 === 30){
-    console.log("smj");
-    p1.update();
-  }
-  display();
+  pos.x = this.x;
+  pos.y = this.y;
+  // if (millis()-t1 === 100){
+  //   console.log("smj");
+  //   p1.update();
+  // }
+  // display();
+  // if (millis()-t1 >= 112){
+  //   t1 = millis();
+  // }
 }
 
 function connected_f1(){
@@ -57,5 +64,9 @@ function connected_f1(){
 function display(){
   noStroke();
   fill("white");
-  circle(p1.x, p1.y, 69);
+  circle(pos.x, pos.y, 69);
+}
+
+function mousePressed(){
+  p1.update();
 }

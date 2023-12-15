@@ -9,5 +9,5 @@ function preload() {
   );
   
   // tell p5.party to sync the pos object
-  pos = partyLoadShared("pos", {x: random(width), y: random(height)});
+  pos = partyLoadShared("pos", {});
 }
