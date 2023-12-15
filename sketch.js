@@ -1,33 +1,72 @@
-let pos = { x: 0, y: 0 };
+/* eslint-disable no-undef */
 
-function preload() {
-  // connect to a p5party server
-  partyConnect(
-    "wss://demoserver.p5party.org",
-    "Testing_F1",
-    // `${random(0, 100)}`
-    "Room1",
-    connected_f1()
-  );
-  
-  // tell p5.party to sync the pos object
-  pos = partyLoadShared("pos", pos);
+class Player{
+  constructor(name, x, y, color){
+    this.name = name;
+    this.x = x;
+    this.y = y;
+    this.color = color;
+    this.speed = 10;
+  }
+
+  move(){
+    if (keyIsDown(87)){
+      this.y -= this.speed;
+    }
+    if (keyIsDown(65)){
+      this.x -= this.speed;
+    }
+    if (keyIsDown(83)){
+      this.y += this.speed;
+    }
+    if (keyIsDown(68)){
+      this.x += this.speed;
+    }
+  }
+
+  update(){
+    pos.x = this.x;
+    pos.y = this.y;
+    console.log(pos.x, pos.y);
+  }
 }
+
+let p1, smth;
+let t1;
 
 function setup() {
   createCanvas(400, 400);
+  t1 = millis();
+  p1 = new Player("lolsies", random(width), random(height), "white");
 }
+
 
 function draw() {
   background(50);
-  ellipse(pos.x, pos.y, 100, 100);
-}
-
-function mousePressed() {
-  pos.x = mouseX;
-  pos.y = mouseY;
+  p1.move();
+  smth = frameRate();
+  pos.x = this.x;
+  pos.y = this.y;
+  // if (millis()-t1 === 100){
+  //   console.log("smj");
+  //   p1.update();
+  // }
+  // display();
+  // if (millis()-t1 >= 112){
+  //   t1 = millis();
+  // }
 }
 
 function connected_f1(){
   console.log("Connection Established!");
+}
+
+function display(){
+  noStroke();
+  fill("white");
+  circle(pos.x, pos.y, 69);
+}
+
+function mousePressed(){
+  p1.update();
 }
