@@ -1,72 +1,18 @@
-/* eslint-disable no-undef */
-
-class Player{
-  constructor(name, x, y, color){
-    this.name = name;
-    this.x = x;
-    this.y = y;
-    this.color = color;
-    this.speed = 10;
-  }
-
-  move(){
-    if (keyIsDown(87)){
-      this.y -= this.speed;
-    }
-    if (keyIsDown(65)){
-      this.x -= this.speed;
-    }
-    if (keyIsDown(83)){
-      this.y += this.speed;
-    }
-    if (keyIsDown(68)){
-      this.x += this.speed;
-    }
-  }
-
-  update(){
-    pos.x = this.x;
-    pos.y = this.y;
-    console.log(pos.x, pos.y);
-  }
-}
-
-let p1, smth;
-let t1;
-
 function setup() {
   createCanvas(400, 400);
-  t1 = millis();
-  p1 = new Player("lolsies", random(width), random(height), "white");
+  noStroke();
 }
 
+function mousePressed() {
+  // write shared data
+  shared.x = mouseX;
+  shared.y = mouseY;
+}
 
 function draw() {
-  background(50);
-  p1.move();
-  smth = frameRate();
-  pos.x = this.x;
-  pos.y = this.y;
-  // if (millis()-t1 === 100){
-  //   console.log("smj");
-  //   p1.update();
-  // }
-  // display();
-  // if (millis()-t1 >= 112){
-  //   t1 = millis();
-  // }
-}
+  background("#ffcccc");
+  fill("#000066");
 
-function connected_f1(){
-  console.log("Connection Established!");
-}
-
-function display(){
-  noStroke();
-  fill("white");
-  circle(pos.x, pos.y, 69);
-}
-
-function mousePressed(){
-  p1.update();
+  // read shared data
+  ellipse(shared.x, shared.y, 100, 100);
 }

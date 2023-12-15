@@ -1,13 +1,12 @@
-/* eslint-disable no-undef */
-let pos;
+let shared;
 
 function preload() {
-  // connect to a p5party server
-  partyConnect(
-    "wss://demoserver.p5party.org",
-    "Testing_F1"
-  );
-  
-  // tell p5.party to sync the pos object
-  pos = partyLoadShared("pos", {});
+  // connect to the party server
+  partyConnect("wss://demoserver.p5party.org", "hello_party");
+
+  // begin loading shared object
+  // and provide starting values for the object to be used
+  // if there are no clients already connected to the room
+  // setup() won't be called until the shared object is loaded
+  shared = partyLoadShared("shared", { x: 100, y: 100 });
 }
