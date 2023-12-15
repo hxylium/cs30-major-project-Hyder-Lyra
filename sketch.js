@@ -6,9 +6,9 @@ let cheese;
 let dummy;
 let ratio;
 let everything = [];
-let objects = [];
 
-let divider;
+
+let divider,eastwall1,westwall1,eastwall2,westwall2;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -16,27 +16,23 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = new Delor(width*2/3,height*2/3);
-  objects.push(cheese);
+  cheese = new Rocket(width*2/3,height*2/3);
   // dummy = new Delor(width/3, height/3);
-  divider = new Wall(width/2,height/2,70,10);
-  objects.push(divider);
+  divider = new Wall(width/2,height/2,1000,30);
+  eastwall1 = new Bend(width,height/2,35,19,0);
+  westwall1 = new Bend(65, height/3-35,30,19,180);
+ 
+  
   
   
 }
 
 
 function draw() {
-  // clear();
+  clear();
   
   cheese.vehicle.drive();
-  cheese.display(true);
-  divider.display();
-  // for (let item of objects){
-  //   if (item === cheese){
-  //     item.display()
-  //   }
-  // }
+  camera.pos = cheese.vehicle.face.pos;
 }
 
 
@@ -64,7 +60,7 @@ class TowT{
     this.object = new Sprite(x-this.bodylength-this.arm.w*2,y);
     this.object.radius = this.facelength/3;
     this.object.drag = 1;
-    this.object.bounciness = 2;
+    this.object.bounciness = 1.5;
     this.object.smallest = this.facelength/3;
     balls.list.push(this.object);
     this.vehicle.id = balls.count;
@@ -87,10 +83,10 @@ class TowT{
     }
   }
 
-  display(playerTrue){
-    // todo
-    this.vehicle.display(playerTrue);
-  }
+  // display(playerTrue){
+  //   // todo
+  //   this.vehicle.display(playerTrue);
+  // }
 }
 class Sport{
   constructor(x,y){
@@ -101,7 +97,7 @@ class Sport{
     this.bumper = new Sprite(x+this.facelength,y);
     this.bumper.d = this.facewidth;
     this.bumper.drag = 2.5;
-    this.bumper.bounciness = 0.8
+    this.bumper.bounciness = 0.8;
     everything.push(this.bumper);
     this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 12, 3, 2.5, this.handbrake, this.unhandbrake);
     this.front = new GlueJoint(this.bumper,this.vehicle.face);
@@ -120,10 +116,10 @@ class Sport{
       this.handbrake = false;
     }
   }
-  display(playerTrue){
-    // todo
-    this.vehicle.display(playerTrue);
-  }
+  // display(playerTrue){
+  //   // todo
+  //   this.vehicle.display(playerTrue);
+  // }
 }
 class Delor{
   constructor(x,y){
@@ -136,6 +132,7 @@ class Delor{
     this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11.5, 4.5, 2.3, this.blink, this.cooldown);
     this.vehicle.phased = false;
     this.vehicle.timer = 0;
+    this.vehicle.time = 300;
     // this.front = new GlueJoint(this.bumper,this.vehicle.face);
   }
 
@@ -155,7 +152,7 @@ class Delor{
   cooldown(){
     if(this.phased){
       this.timer ++;
-      if (this.timer >= 300){
+      if (this.timer >= this.time){
         this.phased = false;
         for (let item of everything){
           this.body.collides(item);
@@ -172,8 +169,50 @@ class Delor{
     }
   }
 
-  display(playerTrue){
-    this.vehicle.display(playerTrue);
+  // display(playerTrue){
+  //   this.vehicle.display(playerTrue);
+  // }
+}
+class Rocket{
+  constructor(x,y){
+    this.facelength = 19;
+    this.facewidth = 19;
+    this.bodylength = 16;
+    this.bodywidth = 19.5;
+    this.bumper = new Sprite(x+this.facelength,y);
+    this.bumper.w = Math.sqrt(this.facewidth**2/2);
+    this.bumper.h = Math.sqrt(this.facewidth**2/2);
+    this.bumper.rotation = 45;
+    this.bumper.drag = 2.5;
+    this.bumper.bounciness = 0;
+    everything.push(this.bumper);
+    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.cooldown);
+    this.front = new GlueJoint(this.bumper,this.vehicle.face);
+    this.vehicle.handbrake = false;
+    this.vehicle.cooldown = false;
+    this.vehicle.timer = 0;
+    this.vehicle.time = 10;
+  }
+  rocket(){
+    if (!this.cooldown){
+      if(this.timer <=0){
+        this.cooldown = true;
+        this.timer = this.time;
+        this.body.applyForce(1000);
+        
+        console.log("rocketed");
+      }
+    }
+  }
+
+  cooldown(){
+    if(this.cooldown){
+      this.timer --;
+      if (this.timer <=0){
+        this.cooldown = false;
+        console.log("recharged");
+      }
+    }
   }
 }
 
@@ -237,7 +276,7 @@ class Car{
     }
     
     // this.body.rotationSpeed += this.turn/6;
-    this.body.applyTorque(this.turn/10);
+    this.body.applyTorque(this.turn/8);
     //special cleanup
     if (this.thing2 !== null){
       this.specialCleanup();
@@ -284,42 +323,42 @@ class Car{
     this.turn = 0;
   }
 
-  display(playerTrue){
-    // fill(this.coolour);
-    // noStroke();
-    let babybell = cheese.vehicle.carCenter();
-    if (playerTrue){
-      push();
-      translate(width/2,height/2);
-      rotate(this.body.rotation);
-      rectMode(CENTER);
-      rect((babybell.x -this.body.x)*ratio, (babybell.y -this.body.y)*ratio,this.body.w*ratio,this.body.h*ratio);
-      // rect(0+this.body.w/2,0,this.body.w*ratio,this.body.h*ratio);
-      pop();
-      push();
-      translate(width/2,height/2);
-      rotate(this.face.rotation);
-      rectMode(CENTER);
-      rect((babybell.x -this.face.x)*ratio, (babybell.y -this.face.y)*ratio,this.face.w*ratio,this.face.h*ratio);
-      // rect(0+this.face.w/2,0,this.face.w*ratio,this.face.h*ratio);
-      pop();
-    }
-    else {
-      push();
-      translate((babybell.x + this.body.x)*ratio, (babybell.y + this.body.y)*ratio);
-      rotate(cheese.vehicle.face.rotation + this.body.rotation);
-      rectMode(CENTER);
-      rect(0,0,this.body.w*ratio,this.body.h*ratio);
-      pop();
-      push();
-      translate((babybell.x + this.face.x)*ratio, (babybell.y + this.face.y)*ratio);
-      rotate(cheese.vehicle.face.rotation + this.face.rotation);
-      rectMode(CENTER);
-      rect(0,0,this.face.w*ratio,this.face.h*ratio);
-      pop();
-    }
+  // display(playerTrue){
+  //   // fill(this.coolour);
+  //   // noStroke();
+  //   let babybell = cheese.vehicle.carCenter();
+  //   if (playerTrue){
+  //     push();
+  //     translate(width/2,height/2);
+  //     rotate(this.body.rotation);
+  //     rectMode(CENTER);
+  //     rect((babybell.x -this.body.x)*ratio, (babybell.y -this.body.y)*ratio,this.body.w*ratio,this.body.h*ratio);
+  //     // rect(0+this.body.w/2,0,this.body.w*ratio,this.body.h*ratio);
+  //     pop();
+  //     push();
+  //     translate(width/2,height/2);
+  //     rotate(this.face.rotation);
+  //     rectMode(CENTER);
+  //     rect((babybell.x -this.face.x)*ratio, (babybell.y -this.face.y)*ratio,this.face.w*ratio,this.face.h*ratio);
+  //     // rect(0+this.face.w/2,0,this.face.w*ratio,this.face.h*ratio);
+  //     pop();
+  //   }
+  //   else {
+  //     push();
+  //     translate((babybell.x + this.body.x)*ratio, (babybell.y + this.body.y)*ratio);
+  //     rotate(cheese.vehicle.face.rotation + this.body.rotation);
+  //     rectMode(CENTER);
+  //     rect(0,0,this.body.w*ratio,this.body.h*ratio);
+  //     pop();
+  //     push();
+  //     translate((babybell.x + this.face.x)*ratio, (babybell.y + this.face.y)*ratio);
+  //     rotate(cheese.vehicle.face.rotation + this.face.rotation);
+  //     rectMode(CENTER);
+  //     rect(0,0,this.face.w*ratio,this.face.h*ratio);
+  //     pop();
+  //   }
     
-  }
+  // }
 }
 
 
@@ -330,17 +369,25 @@ class Wall{
     everything.push(this.cement);
   }
 
-  display(){
-    rectMode(CENTER);
-    let babybell = cheese.vehicle.carCenter();
-    push();
-    translate((babybell.x + this.cement.x)*ratio, (babybell.y + this.cement.y)*ratio);
-    rotate( this.cement.rotation); //cheese.vehicle.face.rotation +
-    rect(0,0,this.cement.width*ratio,this.cement.height*ratio);
-    pop();
+  // display(){
+  //   rectMode(CENTER);
+  //   let babybell = cheese.vehicle.carCenter();
+  //   push();
+  //   translate((babybell.x + this.cement.x)*ratio, (babybell.y + this.cement.y)*ratio);
+  //   rotate( this.cement.rotation); //cheese.vehicle.face.rotation +
+  //   rect(0,0,this.cement.width*ratio,this.cement.height*ratio);
+  //   pop();
+  // }
+}
+class Bend{
+  constructor(x,y,size,angle,rotation){
+    this.cement = new Sprite(x, y, [1, -10, size, 1, angle]);
+    this.cement.collider = "static";
+    this.cement.rotation = rotation;
+    // this.cement.shape = "chain";
+    everything.push(this.cement);
   }
 }
-
 
 function toZero(number){
   if (number !== 0){
