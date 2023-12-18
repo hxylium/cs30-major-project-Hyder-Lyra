@@ -8,7 +8,11 @@ let ratio;
 let everything = [];
 
 
-let divider,eastwall1,westwall1,eastwall2,westwall2;
+let divider1,divider2,divider3,eastwall1,westwall1,eastwall2,westwall2,eastwall3;
+
+let south1, south2, south3, south4, south5;
+let divider4;
+let cap;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -16,15 +20,37 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = new Rocket(width*2/3,height*2/3);
+  cheese = new TowT(width*2/3*big,height*2/3*big);
   // dummy = new Delor(width/3, height/3);
-  divider = new Wall(width/2,height/2,1000,30);
-  eastwall1 = new Bend(width,height/2,35,19,0);
-  westwall1 = new Bend(65, height/3-35,30,19,180);
- 
+  divider1 = new Wall(570,500,900,15);
+  divider2 = new Wall(580,90,800,25);
+  divider3 = new Wall(600,260,750,15);
+
+
+  // 15 thick double sided curve wall
+  eastwall1 = new Bend(1100,500,35,19,0);
+  eastwall2 = new Bend(1110,500,37,19,0);
+
+
+  westwall1 = new Bend(65, 295,30,19,180);
+
+  eastwall3 = new Bend(1200,500,60,19,0);
+
   
+  south1 = new Bend(840,813,35,10,180);
+  south2 = new Bend(850,820,33,10,180);
+
+  south3 = new Bend(930, 912, 12, 10, 180);
+
+
+  south4 = new Bend(765, 1045, 21, 19, 90);
   
+  cap = new Wall(770, 970, 18,18);
+
   
+  divider4 = new Wall(625, 820, 15, 300);
+
+  south5 = new Bend(705,590,33,10,181);
 }
 
 
@@ -53,15 +79,18 @@ class TowT{
     this.bodywidth = 16;
     this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 8.5, 11.5, 2, 1.7, this.grow, this.shrink);
     this.arm = new Sprite(x-this.bodylength-this.facelength*4/9,y);
-    this.arm.w = this.facelength*2/3;
+    this.arm.w = this.facelength/3;
     this.arm.h = 1;
+    this.arm.darg = 2;
     everything.push(this.arm);
     this.armbase = new GlueJoint(this.arm,this.vehicle.body);
     this.object = new Sprite(x-this.bodylength-this.arm.w*2,y);
-    this.object.radius = this.facelength/3;
-    this.object.drag = 1;
+    this.object.radius = this.facelength/7;
+    this.object.drag = 0.1;
     this.object.bounciness = 1.5;
-    this.object.smallest = this.facelength/3;
+    this.object.smallest = this.facelength/7;
+    this.object.overlaps(this.vehicle.body);
+    this.object.overlaps(this.vehicle.face);
     balls.list.push(this.object);
     this.vehicle.id = balls.count;
     balls.count +=1;
@@ -99,7 +128,7 @@ class Sport{
     this.bumper.drag = 2.5;
     this.bumper.bounciness = 0.8;
     everything.push(this.bumper);
-    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 12, 3, 2.5, this.handbrake, this.unhandbrake);
+    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 16, 3, 2.5, this.handbrake, this.unhandbrake);
     this.front = new GlueJoint(this.bumper,this.vehicle.face);
     this.vehicle.handbrake = false;
   }
@@ -183,7 +212,7 @@ class Rocket{
     this.bumper.w = Math.sqrt(this.facewidth**2/2);
     this.bumper.h = Math.sqrt(this.facewidth**2/2);
     this.bumper.rotation = 45;
-    this.bumper.drag = 2.5;
+    this.bumper.drag = 1;
     this.bumper.bounciness = 0;
     everything.push(this.bumper);
     this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.cooldown);
@@ -191,14 +220,14 @@ class Rocket{
     this.vehicle.handbrake = false;
     this.vehicle.cooldown = false;
     this.vehicle.timer = 0;
-    this.vehicle.time = 10;
+    this.vehicle.time = 200;
   }
   rocket(){
     if (!this.cooldown){
       if(this.timer <=0){
         this.cooldown = true;
         this.timer = this.time;
-        this.body.applyForce(1000);
+        this.body.applyForce(2000);
         
         console.log("rocketed");
       }
@@ -255,16 +284,17 @@ class Car{
   }
 
   drive() {
-    if (Math.abs(this.body.vel.x)+Math.abs(this.body.vel.y) > 0){
-      if((this.hanbrake === false||(Math.abs(this.body.vel.x)+Math.abs(this.body.vel.y) > 1.5))){
+    // Math.abs(this.body.vel.x)+Math.abs(this.body.vel.y)
+    if ( Math.abs(this.move) > 0){
+      if((this.hanbrake === false||Math.abs(this.move) > 1.5)){
 
         if (keyIsDown(65)){
-          this.turn -= this.handling;
+          this.turn -= this.handling*toZero(this.move);
         // cheese.bearing = cheese.bare-90;
         // cheese.applyForce(1);
         }
         if (keyIsDown(68)){
-          this.turn += this.handling;
+          this.turn += this.handling*toZero(this.move);
         // cheese.bearing = cheese.bare+90;
         // cheese.applyForce(1);
         }
@@ -362,9 +392,10 @@ class Car{
 }
 
 
+let big = 1.4;
 class Wall{
   constructor(x,y,width,height){
-    this.cement = new Sprite(x,y,width,height);
+    this.cement = new Sprite(x*big,y*big,width*big,height*big);
     this.cement.collider = "static";
     everything.push(this.cement);
   }
@@ -381,7 +412,7 @@ class Wall{
 }
 class Bend{
   constructor(x,y,size,angle,rotation){
-    this.cement = new Sprite(x, y, [1, -10, size, 1, angle]);
+    this.cement = new Sprite(x*big, y*big, [1, -10, size*big, 1, angle]);
     this.cement.collider = "static";
     this.cement.rotation = rotation;
     // this.cement.shape = "chain";
