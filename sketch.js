@@ -27,26 +27,30 @@ class Player{
   update(){
     pos.x = this.x;
     pos.y = this.y;
-    console.log(pos.x, pos.y);
+    // console.log(pos.x, pos.y);
   }
 }
 
 let p1, smth;
-let t1;
+// let t1;
 
-function setup() {
+window.setup = () => {
   createCanvas(400, 400);
-  t1 = millis();
-  p1 = new Player("lolsies", random(width), random(height), "white");
-}
+  noStroke();
+
+  if (partyIsHost()) {
+    p1 = new Player("lolsies", random(width), random(height), "white");
+  }
+};
 
 
 function draw() {
   background(50);
   p1.move();
-  smth = frameRate();
-  pos.x = this.x;
-  pos.y = this.y;
+  p1.update();
+  // smth = frameRate();
+  // pos.x = this.x;
+  // pos.y = this.y;
   // if (millis()-t1 === 100){
   //   console.log("smj");
   //   p1.update();

@@ -1,13 +1,9 @@
 /* eslint-disable no-undef */
 let pos;
 
-function preload() {
-  // connect to a p5party server
+window.preload = () => {
   partyConnect(
-    "wss://demoserver.p5party.org",
-    "Testing_F1"
-  );
-  
-  // tell p5.party to sync the pos object
-  pos = partyLoadShared("pos", {});
-}
+    "wss://demoserver.p5party.org", 
+    "drift-testing");
+  pos = partyLoadShared("pos");
+};
