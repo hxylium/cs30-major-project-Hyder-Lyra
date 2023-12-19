@@ -1,94 +1,49 @@
-import { Point, Rect, pointInRect } from "./shape.js";
-
-const my_id = Math.random();
-
 let shared;
 
-window.preload = () => {
-  partyConnect("wss://demoserver.p5party.org", "drag_2");
+function preload() {
+  partyConnect("wss://demoserver.p5party.org", "p5_objects");
   shared = partyLoadShared("shared");
-};
+}
 
-window.setup = () => {
+function setup() {
   createCanvas(400, 400);
-  noStroke();
-
   if (partyIsHost()) {
-    shared.sprites = [];
-    shared.sprites.push(initSprite(new Rect(10, 10, 100, 100), "#ffff66"));
-    shared.sprites.push(initSprite(new Rect(30, 30, 100, 100), "#ff66ff"));
-    shared.sprites.push(initSprite(new Rect(50, 50, 100, 100), "#66ffff"));
-  }
-};
-
-window.draw = () => {
-  background("#cc6666");
-  shared.sprites.forEach(stepSprite);
-  shared.sprites.forEach(drawSprite);
-};
-
-window.mousePressed = () => {
-  // abort if any sprites are already in drag
-  // this requires players to take turns with dragging
-  if (shared.sprites.find((s) => s.inDrag)) return;
-
-  for (const s of shared.sprites.slice().reverse()) {
-    if (mousePressedSprite(s)) break;
-  }
-};
-
-window.mouseReleased = () => {
-  for (const s of shared.sprites.slice().reverse()) {
-    if (mouseReleasedSprite(s)) break;
-  }
-};
-
-function initSprite(rect = new Rect(), color = "red") {
-  const s = {};
-  s.rect = rect;
-  s.color = color;
-  return s;
-}
-
-function stepSprite(s) {
-  if (s.inDrag && s.owner === my_id) {
-    s.rect.l = mouseX + s.dragOffset.x;
-    s.rect.t = mouseY + s.dragOffset.y;
+    partySetShared(shared, {
+      pos: { x: 200, y: 200 },
+      color: color("red").toString(),
+    });
   }
 }
 
-function drawSprite(s) {
-  push();
-  fill(s.color);
+function mousePrressed() {
+  // p5.Vectors can't be shared directly
+  const mouseVector = createVector(mouseX, mouseY);
+
+  // but you probably only need to share
+  // the x and y (and sometimes Z) properties
+  // unpack the values you need to share
+  // from the vector
+  shared.pos = { x: mouseVector.x, y: mouseVector.y };
+  // shared.pos isn't a p5.Vector, just a simple data object
+
+  // p5.Color objects can't be shared directly
+  // const randomColor = color(random(255), random(255), random(255));
+
+  // but you can convert p5.Color objects to strings for sharing
+  // shared.color = randomColor.toString();
+
+  // the string looks like this "rgba(255, 0, 0, 1)"
+}
+
+function draw() {
+  background(220);
   noStroke();
-  if (s.inDrag) {
-    strokeWeight(3);
-    stroke("black");
-  }
-  rect(s.rect.l, s.rect.t, s.rect.w, s.rect.h);
-  pop();
-}
 
-function mousePressedSprite(s) {
-  if (!s.inDrag && pointInRect(new Point(mouseX, mouseY), s.rect)) {
-    // begin drag
-    s.inDrag = true;
-    s.owner = my_id;
-    s.dragOffset = new Point(s.rect.l - mouseX, s.rect.t - mouseY);
+  // p5 functions that take color arguments
+  // can accept the color description strings
+  fill(shared.color);
+  mousePrressed();
 
-    // move to top
-    const i = shared.sprites.indexOf(s);
-    shared.sprites.splice(i, 1);
-    shared.sprites.push(s);
-    return true;
-  }
-  return false;
-}
-
-function mouseReleasedSprite(s) {
-  if (s.owner === my_id) {
-    s.inDrag = false;
-    s.owner = null;
-  }
-  return false;
+  // shared.pos has the x and y values we need.
+  ellipse(shared.pos.x, shared.pos.y, 50, 50);
 }
