@@ -1,12 +1,12 @@
-let shared;
+// let shared;
 
-function preload() {
-  // connect to the party server
-  partyConnect("wss://demoserver.p5party.org", "hello_party");
+// function preload() {
+//   // connect to the party server
+//   partyConnect("wss://demoserver.p5party.org", "hello_party");
 
-  // begin loading shared object
-  // and provide starting values for the object to be used
-  // if there are no clients already connected to the room
-  // setup() won't be called until the shared object is loaded
-  shared = partyLoadShared("shared", { x: 100, y: 100 });
-}
+//   // begin loading shared object
+//   // and provide starting values for the object to be used
+//   // if there are no clients already connected to the room
+//   // setup() won't be called until the shared object is loaded
+//   shared = partyLoadShared("shared", { x: 100, y: 100 });
+// }
