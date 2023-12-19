@@ -1,4 +1,4 @@
-/* eslint-disable no-undef */
+
 
 class Player{
   constructor(name, x, y, color){
@@ -39,9 +39,12 @@ window.setup = () => {
   noStroke();
 
   if (partyIsHost()) {
+    pos = [];
     p1 = new Player("lolsies", random(width), random(height), "white");
+    pos.push(p1),
+
   }
-};
+}
 
 
 function draw() {
