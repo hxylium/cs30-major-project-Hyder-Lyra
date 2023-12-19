@@ -6,6 +6,7 @@ let cheese;
 let dummy;
 let ratio;
 let everything = [];
+let spikes = [];
 
 
 let divider1,divider2,divider3,eastwall1,westwall1,eastwall2,westwall2,eastwall3;
@@ -13,6 +14,7 @@ let divider1,divider2,divider3,eastwall1,westwall1,eastwall2,westwall2,eastwall3
 let south1, south2, south3, south4, south5;
 let divider4;
 let cap;
+let death;
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -51,6 +53,12 @@ function setup() {
   divider4 = new Wall(625, 820, 15, 300);
 
   south5 = new Bend(705,590,33,10,181);
+
+  let angle = 4;
+  for (let i = -10; i <0; i++){
+    death = new Spike(700-sin(angle-i*10)*80, 700-cos(i*10)*80, i*9+90);
+  }
+  // death = new Spike(700, 700, 0);
 }
 
 
@@ -65,6 +73,7 @@ function draw() {
 // TowT related things
 let growthrate = 0.5;
 let maxsize = 20;
+let minsize = 12/4;
 let balls = {
   list: [],
   count: 0,
@@ -77,20 +86,21 @@ class TowT{
     this.facewidth = 20;
     this.bodylength = 20;
     this.bodywidth = 16;
-    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 8.5, 11.5, 2, 1.7, this.grow, this.shrink);
+    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 8.5, 11.5, 2, 1.7, this.handbrake, this.unhandbrake);
     this.arm = new Sprite(x-this.bodylength-this.facelength*4/9,y);
+    this.vehicle.face.drag = 1.2;
     this.arm.w = this.facelength/3;
     this.arm.h = 1;
     this.arm.darg = 2;
     everything.push(this.arm);
     this.armbase = new GlueJoint(this.arm,this.vehicle.body);
     this.object = new Sprite(x-this.bodylength-this.arm.w*2,y);
-    this.object.radius = this.facelength/7;
-    this.object.drag = 0.1;
-    this.object.bounciness = 1.5;
-    this.object.smallest = this.facelength/7;
-    this.object.overlaps(this.vehicle.body);
-    this.object.overlaps(this.vehicle.face);
+    this.object.radius = this.facelength/4;
+    this.object.drag = 1.5;
+    this.object.bounciness = 1;
+    // this.object.smallest = this.facelength/7;
+    // this.object.overlaps(this.vehicle.body);
+    // this.object.overlaps(this.vehicle.face);
     balls.list.push(this.object);
     this.vehicle.id = balls.count;
     balls.count +=1;
@@ -98,19 +108,32 @@ class TowT{
     this.towline.offsetA.x = -1*this.arm.w/2;
     this.towline.springiness = 0.6;
   }
-  grow(){
-    if (balls.list[this.id].radius < maxsize){
-      // console.log("grow");
-      balls.list[this.id].radius += growthrate;
+  handbrake(){
+    // handbrake
+    for (let i = 0; i < 20; i++){
+      this.move -= toZero(this.move);
     }
+    this.body.speed -= toZero(this.body.speed)*10**-1;
+    console.log("handbrake");
+  }
+  unhandbrake(){
+    if(this.hanbrake === true){
+      this.handbrake = false;
+    }
+  }
+  // grow(){
+  //   if (balls.list[this.id].radius < maxsize){
+  //     // console.log("grow");
+  //     balls.list[this.id].radius += growthrate;
+  //   }
     
-  }
-  shrink(){
-    if (balls.list[this.id].radius > balls.list[this.id].smallest){
-      // console.log("shrink");
-      balls.list[this.id].radius -= growthrate/2;
-    }
-  }
+  // }
+  // shrink(){
+  //   if (balls.list[this.id].radius > minsize){
+  //     // console.log("shrink");
+  //     balls.list[this.id].radius -= growthrate/2;
+  //   }
+  // }
 
   // display(playerTrue){
   //   // todo
@@ -419,6 +442,20 @@ class Bend{
     everything.push(this.cement);
   }
 }
+class Spike{
+  constructor(x,y,rotation){
+    this.metal = new Sprite(x*big,y*big, [
+      [18*big, 6*big],
+      [-18*big, 6*big],
+      [0, -12*big]
+    ]);
+    this.metal.collider = "static";
+    this.metal.rotation = rotation;
+    everything.push(this.metal);
+    spikes.push(this.metal);
+  }
+}
+
 
 function toZero(number){
   if (number !== 0){
