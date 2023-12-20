@@ -22,42 +22,41 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = new TowT(width*2/3*big,height*2/3*big);
+  cheese = new Sport(150*big,250*big);
   // dummy = new Delor(width/3, height/3);
-  divider1 = new Wall(570,500,900,15);
-  divider2 = new Wall(580,90,800,25);
-  divider3 = new Wall(600,260,750,15);
+  divider1 = new Wall(570,500,900,15,0);
+  divider2 = new Wall(580,90,800,25,0);
+  divider3 = new Wall(600,260,750,15,0);
 
 
   // 15 thick double sided curve wall
-  eastwall1 = new Bend(1100,500,35,19,0);
-  eastwall2 = new Bend(1110,500,37,19,0);
+  eastwall1 = new Bend(150,224,12,11,0, -1,true);
+  eastwall2 = new Bend(150,225,12,11, -11, -1);
 
+  // westwall1 = new Bend(65, 295,2,19,180);
 
-  westwall1 = new Bend(65, 295,30,19,180);
-
-  eastwall3 = new Bend(1200,500,60,19,0);
-
-  
-  south1 = new Bend(840,813,35,10,180);
-  south2 = new Bend(850,820,33,10,180);
-
-  south3 = new Bend(930, 912, 12, 10, 180);
-
-
-  south4 = new Bend(765, 1045, 21, 19, 90);
-  
-  cap = new Wall(770, 970, 18,18);
+  // eastwall3 = new Bend(1200,500,2,19,0);
 
   
-  divider4 = new Wall(625, 820, 15, 300);
+  // south1 = new Bend(840,813,2,10,180);
 
-  south5 = new Bend(705,590,33,10,181);
+  // south3 = new Bend(930, 912, 2, 10, 180);
 
-  let angle = 4;
-  for (let i = -10; i <0; i++){
-    death = new Spike(700-sin(angle-i*10)*80, 700-cos(i*10)*80, i*9+90);
-  }
+
+  // south4 = new Bend(765, 1045, 2, 19, 90);
+  
+  cap = new Wall(770, 970, 18,18,0);
+
+  
+  divider4 = new Wall(625, 820, 15, 300,0);
+
+  south5 = new Bend(603,515,12,10,-15, 1);
+
+  // let angle = 4;
+  // let space = 6;
+  // for (let i = -14; i <1; i++){
+  //   death = new Spike(800-sin(angle-i*space)*150, 680-cos(i*space)*150, i*(space-0)+90);
+  // }
   // death = new Spike(700, 700, 0);
 }
 
@@ -266,6 +265,18 @@ class Rocket{
       }
     }
   }
+  docar(){
+    this.vehicle.spikeCheck();
+    if (!this.vehicle.dead){
+      this.vehicle.drive();
+    }
+    else {
+      this.respawn();
+    }
+  }
+  respawn(){
+    this = new Rocket();
+  }
 }
 
 class Car{
@@ -293,6 +304,8 @@ class Car{
     this.handling = handling;
     this.thing = thing;
     this.thing2 = thing2;
+    this.checkpoint = 0;
+    this.dead = false;
   }
 
   special(){
@@ -304,6 +317,21 @@ class Car{
 
   carCenter(){
     return {x:(this.body.x+this.face.x)/2, y: (this.body.y+this.face.y)/2};
+  }
+
+  die(){
+    this.midsec = null;
+    this.dead = true;
+  }
+  spikeCheck(){
+    for (let part of [this.body,this.face]){
+      for (let pokey of spikes){
+        if (part.collides(pokey)){
+          this.die();
+          break;
+        }
+      }
+    }
   }
 
   drive() {
@@ -375,7 +403,6 @@ class Car{
     // this.turn -= toZero(this.turn)*this.handling;
     this.turn = 0;
   }
-
   // display(playerTrue){
   //   // fill(this.coolour);
   //   // noStroke();
@@ -417,9 +444,10 @@ class Car{
 
 let big = 1.4;
 class Wall{
-  constructor(x,y,width,height){
+  constructor(x,y,width,height,rotation){
     this.cement = new Sprite(x*big,y*big,width*big,height*big);
     this.cement.collider = "static";
+    this.cement.rotation = rotation;
     everything.push(this.cement);
   }
 
@@ -434,12 +462,33 @@ class Wall{
   // }
 }
 class Bend{
-  constructor(x,y,size,angle,rotation){
-    this.cement = new Sprite(x*big, y*big, [1, -10, size*big, 1, angle]);
-    this.cement.collider = "static";
-    this.cement.rotation = rotation;
+  constructor(x,y,size,angle,start, value, spikes){
+    // this.cement = new Sprite(x*big, y*big, [1, -10, size*big, 1, angle]);
+    // this.cement.collider = "static";
+    
+    let space = angle/2;
+    
+    if (value === 1){
+      for (let i = start; i <start+angle+space; i++){
+        this.cement = new Wall(x*big-sin(angle-i*space)*13*big*size, y*big-cos(i*space)*13*big*size,10*size/3*big,10*big, i*(space+0.5)+0);
+        everything.push(this.cement);
+        if (spikes === true){
+          death = new Spike(x*big-sin(angle-i*space)*13*big*size, y*big-cos(i*space)*13*big*size, i*(space-0)+90);
+        }
+      }
+    }
+    else {
+      for (let i = start; i >start-angle-space; i--){
+        this.cement = new Wall(x*big-sin(angle-i*space)*13*big*size, y*big-cos(i*space)*13*big*size,10*size/3*big,10*big, i*(space+0.5)+0);
+        everything.push(this.cement);
+        if (spikes === true){
+          death = new Spike(x*big-sin(angle-i*space)*13*big*size, y*big-cos(i*space)*13*big*size, i*(space-0)+90);
+        }
+      }
+    }
+    // this.cement.rotation = rotation;
     // this.cement.shape = "chain";
-    everything.push(this.cement);
+    
   }
 }
 class Spike{
