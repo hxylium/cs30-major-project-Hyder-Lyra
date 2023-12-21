@@ -15,6 +15,10 @@ let south1, south2, south3, south4, south5;
 let divider4;
 let cap;
 let death;
+let respawntime = 2000;
+
+
+let checkpoints = [];
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
@@ -22,7 +26,7 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = new Sport(150*big,250*big);
+  cheese = makeVehicle(150,250,180,Rocket);
   // dummy = new Delor(width/3, height/3);
   divider1 = new Wall(570,500,900,15,0);
   divider2 = new Wall(580,90,800,25,0);
@@ -51,20 +55,20 @@ function setup() {
   divider4 = new Wall(625, 820, 15, 300,0);
 
   south5 = new Bend(603,515,12,10,-15, 1);
-
-  // let angle = 4;
-  // let space = 6;
-  // for (let i = -14; i <1; i++){
-  //   death = new Spike(800-sin(angle-i*space)*150, 680-cos(i*space)*150, i*(space-0)+90);
-  // }
-  // death = new Spike(700, 700, 0);
+  
+  makecheckP(85*big,190*big, -180, checkpoints);
+  
 }
 
 
 function draw() {
   clear();
   
-  cheese.vehicle.drive();
+  cheese.docar();
+  if(cheese.vehicle.dead && cheese.vehicle.tod+respawntime >= millis()){
+    cheese = respawn(cheese.vehicle.checkpoint,cheese, cheese.type);
+    checkPFix(checkpoints);
+  }
   camera.pos = cheese.vehicle.face.pos;
 }
 
@@ -79,21 +83,39 @@ let balls = {
 };
 
 
+function respawn(checkNum,self,type){
+  console.log(self);
+  self.vehicle.body.remove();
+  self.vehicle.face.remove();
+  self.bumper.remove();
+  // self = null;
+  let point = checkpoints[checkNum];
+  // self.vehicle.dead = false;
+  return makeVehicle(point.x,point.y,point.spot.rotation, type);
+  // self.vehicle.dead = false;
+}
+
+function makeVehicle(x,y,rotation,type){
+  let beep = new type(x,y,rotation);
+  beep.vehicle.dead = false;
+  beep.self = beep;
+  return beep;
+}
 class TowT{
-  constructor(x,y){
+  constructor(x,y,rotation){
     this.facelength = 12;
     this.facewidth = 20;
     this.bodylength = 20;
     this.bodywidth = 16;
-    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 8.5, 11.5, 2, 1.7, this.handbrake, this.unhandbrake);
-    this.arm = new Sprite(x-this.bodylength-this.facelength*4/9,y);
+    this.vehicle = new Car(x,y,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 8.5, 11.5, 2, 1.7, this.handbrake, this.unhandbrake);
+    this.arm = new Sprite(x*big-this.bodylength-this.facelength*4/9,y*big);
     this.vehicle.face.drag = 1.2;
     this.arm.w = this.facelength/3;
     this.arm.h = 1;
     this.arm.darg = 2;
     everything.push(this.arm);
     this.armbase = new GlueJoint(this.arm,this.vehicle.body);
-    this.object = new Sprite(x-this.bodylength-this.arm.w*2,y);
+    this.object = new Sprite(x*big-this.bodylength-this.arm.w*2,y*big);
     this.object.radius = this.facelength/4;
     this.object.drag = 1.5;
     this.object.bounciness = 1;
@@ -140,17 +162,17 @@ class TowT{
   // }
 }
 class Sport{
-  constructor(x,y){
+  constructor(x,y,rotation){
     this.facelength = 15;
     this.facewidth = 19;
     this.bodylength = 16;
     this.bodywidth = 20;
-    this.bumper = new Sprite(x+this.facelength,y);
+    this.bumper = new Sprite(x*big+this.facelength,y*big);
     this.bumper.d = this.facewidth;
     this.bumper.drag = 2.5;
     this.bumper.bounciness = 0.8;
     everything.push(this.bumper);
-    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 16, 3, 2.5, this.handbrake, this.unhandbrake);
+    this.vehicle = new Car(x,y,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 16, 3, 2.5, this.handbrake, this.unhandbrake);
     this.front = new GlueJoint(this.bumper,this.vehicle.face);
     this.vehicle.handbrake = false;
   }
@@ -173,14 +195,14 @@ class Sport{
   // }
 }
 class Delor{
-  constructor(x,y){
+  constructor(x,y,rotation){
     this.facelength = 15;
     this.facewidth = 19;
     this.bodylength = 23;
     this.bodywidth = 20;
     // this.bumper = new Sprite(x+this.facelength,y);
     // this.bumper.d = this.facewidth;
-    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11.5, 4.5, 2.3, this.blink, this.cooldown);
+    this.vehicle = new Car(x,y,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11.5, 4.5, 2.3, this.blink, this.cooldown);
     this.vehicle.phased = false;
     this.vehicle.timer = 0;
     this.vehicle.time = 300;
@@ -220,24 +242,43 @@ class Delor{
     }
   }
 
+  docar(){
+    this.vehicle.spikeCheck();
+    if (!this.vehicle.dead && !keyIsDown(82)){
+      this.vehicle.drive();
+    }
+    else {
+      this.respawn(this.vehicle.checkpoint);
+    }
+  }
+  respawn(checkNum){
+    this.self = null;
+    this.vehicle.body.remove();
+    this.vehicle.face.remove();
+    let point = checkpoints[checkNum];
+    this.self = new Delor(point.x,point.y,this.self);
+    this.vehicle.dead = false;
+  }
+
   // display(playerTrue){
   //   this.vehicle.display(playerTrue);
   // }
 }
 class Rocket{
-  constructor(x,y){
+  constructor(x,y,rotation){
+    this.type = Rocket;
     this.facelength = 19;
     this.facewidth = 19;
     this.bodylength = 16;
     this.bodywidth = 19.5;
-    this.bumper = new Sprite(x+this.facelength,y);
+    this.bumper = new Sprite(x*big+this.facelength,y*big);
     this.bumper.w = Math.sqrt(this.facewidth**2/2);
     this.bumper.h = Math.sqrt(this.facewidth**2/2);
     this.bumper.rotation = 45;
     this.bumper.drag = 1;
     this.bumper.bounciness = 0;
     everything.push(this.bumper);
-    this.vehicle = new Car(x,y,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.cooldown);
+    this.vehicle = new Car(x,y,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.cooldown);
     this.front = new GlueJoint(this.bumper,this.vehicle.face);
     this.vehicle.handbrake = false;
     this.vehicle.cooldown = false;
@@ -267,28 +308,31 @@ class Rocket{
   }
   docar(){
     this.vehicle.spikeCheck();
+    if(keyIsDown(82)){
+      this.vehicle.die();
+    }
     if (!this.vehicle.dead){
       this.vehicle.drive();
     }
-    else {
-      this.respawn();
-    }
   }
-  respawn(){
-    this = new Rocket();
-  }
+  
+  
+  // deathTimer(start,num){
+  //   while()
+  // }
+
 }
 
 class Car{
-  constructor(x,y,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2){
-    this.body = new Sprite(x-backlength/2,y);
+  constructor(x,y,rotation,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2){
+    this.body = new Sprite(x*big-backlength/2,y*big);
     this.body.w = backlength;
     this.body.h = backwidth;
     this.body.drag = 2;
     this.body.rotationDrag = 3;
     this.body.bounciness = 0.8;
     everything.push(this.body);
-    this.face = new Sprite(x+facelength/2,y);
+    this.face = new Sprite(x*big+facelength/2,y*big);
     this.face.w = facelength;
     this.face.h = facewidth;
     this.face.drag = 2.5;
@@ -306,6 +350,7 @@ class Car{
     this.thing2 = thing2;
     this.checkpoint = 0;
     this.dead = false;
+    this.body.rotation = rotation;
   }
 
   special(){
@@ -320,7 +365,8 @@ class Car{
   }
 
   die(){
-    this.midsec = null;
+    this.midsec.remove();
+    this.tod = millis();
     this.dead = true;
   }
   spikeCheck(){
@@ -330,6 +376,14 @@ class Car{
           this.die();
           break;
         }
+      }
+    }
+  }
+
+  spawnCheck(){
+    for(let spot of checkpoints){
+      if(this.body.overlaps(spot.spot)||this.body.overlaps(spot.spot)){
+        this.checkpoint = spot.number;
       }
     }
   }
@@ -403,42 +457,8 @@ class Car{
     // this.turn -= toZero(this.turn)*this.handling;
     this.turn = 0;
   }
-  // display(playerTrue){
-  //   // fill(this.coolour);
-  //   // noStroke();
-  //   let babybell = cheese.vehicle.carCenter();
-  //   if (playerTrue){
-  //     push();
-  //     translate(width/2,height/2);
-  //     rotate(this.body.rotation);
-  //     rectMode(CENTER);
-  //     rect((babybell.x -this.body.x)*ratio, (babybell.y -this.body.y)*ratio,this.body.w*ratio,this.body.h*ratio);
-  //     // rect(0+this.body.w/2,0,this.body.w*ratio,this.body.h*ratio);
-  //     pop();
-  //     push();
-  //     translate(width/2,height/2);
-  //     rotate(this.face.rotation);
-  //     rectMode(CENTER);
-  //     rect((babybell.x -this.face.x)*ratio, (babybell.y -this.face.y)*ratio,this.face.w*ratio,this.face.h*ratio);
-  //     // rect(0+this.face.w/2,0,this.face.w*ratio,this.face.h*ratio);
-  //     pop();
-  //   }
-  //   else {
-  //     push();
-  //     translate((babybell.x + this.body.x)*ratio, (babybell.y + this.body.y)*ratio);
-  //     rotate(cheese.vehicle.face.rotation + this.body.rotation);
-  //     rectMode(CENTER);
-  //     rect(0,0,this.body.w*ratio,this.body.h*ratio);
-  //     pop();
-  //     push();
-  //     translate((babybell.x + this.face.x)*ratio, (babybell.y + this.face.y)*ratio);
-  //     rotate(cheese.vehicle.face.rotation + this.face.rotation);
-  //     rectMode(CENTER);
-  //     rect(0,0,this.face.w*ratio,this.face.h*ratio);
-  //     pop();
-  //   }
-    
-  // }
+ 
+
 }
 
 
@@ -471,7 +491,7 @@ class Bend{
     if (value === 1){
       for (let i = start; i <start+angle+space; i++){
         this.cement = new Wall(x*big-sin(angle-i*space)*13*big*size, y*big-cos(i*space)*13*big*size,10*size/3*big,10*big, i*(space+0.5)+0);
-        everything.push(this.cement);
+        everything.push(this.cement.cement);
         if (spikes === true){
           death = new Spike(x*big-sin(angle-i*space)*13*big*size, y*big-cos(i*space)*13*big*size, i*(space-0)+90);
         }
@@ -480,7 +500,7 @@ class Bend{
     else {
       for (let i = start; i >start-angle-space; i--){
         this.cement = new Wall(x*big-sin(angle-i*space)*13*big*size, y*big-cos(i*space)*13*big*size,10*size/3*big,10*big, i*(space+0.5)+0);
-        everything.push(this.cement);
+        everything.push(this.cement.cement);
         if (spikes === true){
           death = new Spike(x*big-sin(angle-i*space)*13*big*size, y*big-cos(i*space)*13*big*size, i*(space-0)+90);
         }
@@ -505,6 +525,36 @@ class Spike{
   }
 }
 
+
+function makecheckP(x,y,angle,list){
+  let checker = new CheckP(x,y,angle,list.length);
+  list.push(checker);
+  checker.fix();
+}
+function checkPFix(list){
+  for (let checker of list){
+    // console.log(checker);
+    checker.fix();
+  }
+}
+
+class CheckP{
+  constructor(x,y,angle,number){
+    this.x = x;
+    this.y = y;
+    this.spot = new Sprite(x*big,y*big);
+    this.spot.radius = 100*big;
+    this.spot.layer = 0;
+    this.spot.rotation = angle;
+    this.spot.collider = "static";
+    this.number = number;
+  }
+  fix(){
+    for (let item of everything){
+      this.spot.overlaps(item);
+    }
+  }
+}
 
 function toZero(number){
   if (number !== 0){
