@@ -17,6 +17,7 @@ let cap;
 let death;
 let respawntime = 200;
 
+let spaghetti;
 
 let checkpoints = [];
 
@@ -29,7 +30,10 @@ function setup() {
   cheese = makeVehicle(1100,250,180,Rocket);
   // dummy = new Delor(width/3, height/3);
   divider1 = new Wall(570,500,900,15,0);
+
   divider2 = new Wall(580,90,800,25,0,true);
+  spaghetti = new SpWall(580,100,0,0,10);
+
   divider3 = new Wall(600,260,750,15,0);
 
 
@@ -472,21 +476,15 @@ class Wall{
     this.cement.collider = "static";
     this.cement.rotation = rotation;
     everything.push(this.cement);
-    let death;
-    for (let i = this.cement.w-this.cement/2; i < this.cement.w; i += 10*big){
-      death = new Spike(this.cement.x+i, this.cement.y-this.cement.h, rotation);
+  }
+}
+class SpWall{
+  constructor(x,y,horiz,verti,amount){
+    
+    for (let i = 0; i >= amount; i--){
+      let death =new Spike(x,y,0);
     }
   }
-
-  // display(){
-  //   rectMode(CENTER);
-  //   let babybell = cheese.vehicle.carCenter();
-  //   push();
-  //   translate((babybell.x + this.cement.x)*ratio, (babybell.y + this.cement.y)*ratio);
-  //   rotate( this.cement.rotation); //cheese.vehicle.face.rotation +
-  //   rect(0,0,this.cement.width*ratio,this.cement.height*ratio);
-  //   pop();
-  // }
 }
 class Bend{
   constructor(x,y,size,angle,start, value, spikes){
