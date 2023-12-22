@@ -15,7 +15,7 @@ let south1, south2, south3, south4, south5;
 let divider4;
 let cap;
 let death;
-let respawntime = 2000;
+let respawntime = 200;
 
 
 let checkpoints = [];
@@ -26,10 +26,10 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(150,250,180,Rocket);
+  cheese = makeVehicle(1100,250,180,Rocket);
   // dummy = new Delor(width/3, height/3);
   divider1 = new Wall(570,500,900,15,0);
-  divider2 = new Wall(580,90,800,25,0);
+  divider2 = new Wall(580,90,800,25,0,true);
   divider3 = new Wall(600,260,750,15,0);
 
 
@@ -37,7 +37,8 @@ function setup() {
   eastwall1 = new Bend(150,224,12,11,0, -1,true);
   eastwall2 = new Bend(150,225,12,11, -11, -1);
 
-  // westwall1 = new Bend(65, 295,2,19,180);
+  westwall1 = new Bend(780,328,20,10.5, 0, 1,true);
+  westwall2 = new Bend(780,328,20,10, 17, 1);
 
   // eastwall3 = new Bend(1200,500,2,19,0);
 
@@ -54,7 +55,7 @@ function setup() {
   
   divider4 = new Wall(625, 820, 15, 300,0);
 
-  south5 = new Bend(603,515,12,10,-15, 1);
+  south5 = new Bend(603,515,12,10,-15, 1, true);
   
   makecheckP(85*big,190*big, -180, checkpoints);
   
@@ -65,9 +66,13 @@ function draw() {
   clear();
   
   cheese.docar();
-  if(cheese.vehicle.dead && cheese.vehicle.tod+respawntime >= millis()){
-    cheese = respawn(cheese.vehicle.checkpoint,cheese, cheese.type);
-    checkPFix(checkpoints);
+  if(keyIsDown(82)){
+    cheese.vehicle.respawnCommit += 1;
+    if(cheese.vehicle.respawnCommit >= respawntime){
+      cheese.vehicle.respawnCommit = 0;
+      cheese = respawn(cheese.vehicle.checkpoint,cheese, cheese.type);
+      checkPFix(checkpoints);
+    }
   }
   camera.pos = cheese.vehicle.face.pos;
 }
@@ -308,9 +313,6 @@ class Rocket{
   }
   docar(){
     this.vehicle.spikeCheck();
-    if(keyIsDown(82)){
-      this.vehicle.die();
-    }
     if (!this.vehicle.dead){
       this.vehicle.drive();
     }
@@ -351,6 +353,7 @@ class Car{
     this.checkpoint = 0;
     this.dead = false;
     this.body.rotation = rotation;
+    this.respawnCommit = 0;
   }
 
   special(){
@@ -464,11 +467,15 @@ class Car{
 
 let big = 1.4;
 class Wall{
-  constructor(x,y,width,height,rotation){
+  constructor(x,y,width,height,rotation, spikes){
     this.cement = new Sprite(x*big,y*big,width*big,height*big);
     this.cement.collider = "static";
     this.cement.rotation = rotation;
     everything.push(this.cement);
+    let death;
+    for (let i = this.cement.w-this.cement/2; i < this.cement.w; i += 10*big){
+      death = new Spike(this.cement.x+i, this.cement.y-this.cement.h, rotation);
+    }
   }
 
   // display(){
@@ -487,19 +494,20 @@ class Bend{
     // this.cement.collider = "static";
     
     let space = angle/2;
+    let death;
     
     if (value === 1){
       for (let i = start; i <start+angle+space; i++){
-        this.cement = new Wall(x*big-sin(angle-i*space)*13*big*size, y*big-cos(i*space)*13*big*size,10*size/3*big,10*big, i*(space+0.5)+0);
+        this.cement = new Wall(x*big-sin(angle-i*space)*13*big*size, y*big-cos(i*space)*13*big*size,10*size/3*big,10*big, i*(space-space/8)+0);
         everything.push(this.cement.cement);
         if (spikes === true){
-          death = new Spike(x*big-sin(angle-i*space)*13*big*size, y*big-cos(i*space)*13*big*size, i*(space-0)+90);
+          death = new Spike(x*big-sin(angle-i*space)*13*big*size, y*big-cos(i*space)*13*big*size,i*(space-0)+90);
         }
       }
     }
     else {
       for (let i = start; i >start-angle-space; i--){
-        this.cement = new Wall(x*big-sin(angle-i*space)*13*big*size, y*big-cos(i*space)*13*big*size,10*size/3*big,10*big, i*(space+0.5)+0);
+        this.cement = new Wall(x*big-sin(angle-i*space)*13*big*size, y*big-cos(i*space)*13*big*size,10*size/3*big,10*big, i*(space+space/8)+0);
         everything.push(this.cement.cement);
         if (spikes === true){
           death = new Spike(x*big-sin(angle-i*space)*13*big*size, y*big-cos(i*space)*13*big*size, i*(space-0)+90);
@@ -513,9 +521,11 @@ class Bend{
 }
 class Spike{
   constructor(x,y,rotation){
+    let thing = 20;
+    let thang = 6;
     this.metal = new Sprite(x*big,y*big, [
-      [18*big, 6*big],
-      [-18*big, 6*big],
+      [thing*big, thang*big],
+      [-1*thing*big, thang*big],
       [0, -12*big]
     ]);
     this.metal.collider = "static";
