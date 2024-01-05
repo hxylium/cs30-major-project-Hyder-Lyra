@@ -9,15 +9,16 @@ let everything = [];
 let spikes = [];
 
 
-let divider1,divider2,divider3,eastwall1,westwall1,eastwall2,westwall2,eastwall3;
+let divider1,divider2,divider3,divider4,eastwall1,westwall1,eastwall2,westwall2,eastwall3;
 
 let south1, south2, south3, south4, south5;
-let divider4;
+
+let dwall1,dwall2;
+
 let cap;
 let death;
 let respawntime = 200;
 
-let spaghetti;
 
 let checkpoints = [];
 
@@ -27,12 +28,12 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(1100,250,180,Rocket);
+  cheese = makeVehicle(580,250,180,Rocket);
   // dummy = new Delor(width/3, height/3);
   divider1 = new Wall(570,500,900,15,0);
 
   divider2 = new Wall(580,90,800,25,0,true);
-  spaghetti = new SpWall(580,100,0,0,10);
+  dwall1 = new SpWall(980,100,10);
 
   divider3 = new Wall(600,260,750,15,0);
 
@@ -61,7 +62,7 @@ function setup() {
 
   south5 = new Bend(603,515,12,10,-15, 1, true);
   
-  makecheckP(85*big,190*big, -180, checkpoints);
+  makecheckP(85*big,190*big, -180, checkpoints,100);
   
 }
 
@@ -479,10 +480,11 @@ class Wall{
   }
 }
 class SpWall{
-  constructor(x,y,horiz,verti,amount){
-    
-    for (let i = 0; i >= amount; i--){
-      let death =new Spike(x,y,0);
+  constructor(x,y,amount){
+    for (let i = 0; i <= amount; i--){
+      let shift = i*10*big;
+      let death = new Spike(x+shift,y,0);
+      death.metal.rotation = 90;
     }
   }
 }
@@ -534,8 +536,8 @@ class Spike{
 }
 
 
-function makecheckP(x,y,angle,list){
-  let checker = new CheckP(x,y,angle,list.length);
+function makecheckP(x,y,angle,list,size){
+  let checker = new CheckP(x,y,angle,list.length,size);
   list.push(checker);
   checker.fix();
 }
@@ -547,11 +549,11 @@ function checkPFix(list){
 }
 
 class CheckP{
-  constructor(x,y,angle,number){
+  constructor(x,y,angle,number,size){
     this.x = x;
     this.y = y;
     this.spot = new Sprite(x*big,y*big);
-    this.spot.radius = 100*big;
+    this.spot.radius = size*big;
     this.spot.layer = 0;
     this.spot.rotation = angle;
     this.spot.collider = "static";
