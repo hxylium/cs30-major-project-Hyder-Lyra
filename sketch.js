@@ -36,7 +36,7 @@ function setup() {
   dwall1 = new SpWall(980,100,10);
 
   divider3 = new Wall(600,260,750,15,0);
-
+  dwall2 = new SpWall(975,260,4);
 
   // 15 thick double sided curve wall
   eastwall1 = new Bend(150,224,12,11,0, -1,true);
