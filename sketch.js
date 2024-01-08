@@ -1,79 +1,193 @@
+import { circle } from 'p5';
 
 
-class Player{
-  constructor(name, x, y, color){
-    this.name = name;
+class Player {
+  constructor(id, x , y) {
+    this.id = id;
     this.x = x;
     this.y = y;
-    this.color = color;
-    this.speed = 10;
   }
 
-  move(){
-    if (keyIsDown(87)){
-      this.y -= this.speed;
-    }
-    if (keyIsDown(65)){
-      this.x -= this.speed;
-    }
-    if (keyIsDown(83)){
-      this.y += this.speed;
-    }
-    if (keyIsDown(68)){
-      this.x += this.speed;
-    }
-  }
-
-  update(){
-    pos.x = this.x;
-    pos.y = this.y;
-    // console.log(pos.x, pos.y);
+  draw() {
+    circle(this.x, this.y, 20);
   }
 }
 
-let p1, smth;
-// let t1;
+let shared;
+let myPlayer;
 
-window.setup = () => {
+function preload() {
+  partyConnect("wss://demoserver.p5party.org", "something");
+  shared = partyLoadShared("shared");
+}
+
+function setup() {
   createCanvas(400, 400);
   noStroke();
 
-  if (partyIsHost()) {
-    pos = [];
-    p1 = new Player("lolsies", random(width), random(height), "white");
-    pos.push(p1),
+  const my_id = Math.random();
+  myPlayer = new Player(my_id, width/2, height/2);
 
+  if (partyIsHost()) {
+    shared.players = {};
+  }
+
+  shared.players[my_id] = myPlayer;
+}
+
+function draw() {
+  background(220);
+
+  for (let id in shared.players) {
+    let player = shared.players[id];
+    player.draw();
+    console.log(player);
   }
 }
 
+function keyPressed() {
+  if (keyCode === 87) { // W
+    myPlayer.y -= 5;
+  } else if (keyCode === 83) { // S
+    myPlayer.y += 5;
+  } else if (keyCode === 65) { // A
+    myPlayer.x -= 5;
+  } else if (keyCode === 68) { // D
+    myPlayer.x += 5;
+  }
 
-function draw() {
-  background(50);
-  p1.move();
-  p1.update();
-  // smth = frameRate();
-  // pos.x = this.x;
-  // pos.y = this.y;
-  // if (millis()-t1 === 100){
-  //   console.log("smj");
-  //   p1.update();
-  // }
-  // display();
-  // if (millis()-t1 >= 112){
-  //   t1 = millis();
-  // }
+  shared.players[myPlayer.id] = myPlayer;
 }
 
-function connected_f1(){
-  console.log("Connection Established!");
-}
+// class Rect {
+//   constructor(l = 0, t = 0, w = 0, h = 0) {
+//     this.l = l;
+//     this.t = t;
+//     this.w = w;
+//     this.h = h;
+//   }
+// }
 
-function display(){
-  noStroke();
-  fill("white");
-  circle(pos.x, pos.y, 69);
-}
+// class Point {
+//   constructor(x = 0, y = 0) {
+//     this.x = x;
+//     this.y = y;
+//   }
+// }
 
-function mousePressed(){
-  p1.update();
-}
+// function pointInRect(p, r) {
+//   return p.x > r.l && p.x < r.l + r.w && p.y > r.t && p.y < r.t + r.h;
+// }
+
+// const my_id = Math.random(); // quick and dirty id
+
+// let shared;
+
+// function preload() {
+//   partyConnect("wss://demoserver.p5party.org", "something");
+//   shared = partyLoadShared("shared");
+// }
+
+// function setup() {
+//   createCanvas(400, 400)
+
+//   noStroke();
+
+//   if (partyIsHost()) {
+//     shared.items = [];
+//     shared.items.push(initItem(new Point(100, 100), "#ffff66", "untitled 1"));
+//   }
+
+//   const createItemSubmit = document.getElementById("create-item-submit");
+//   createItemSubmit.addEventListener("click", onCreateItem);
+// }
+
+// function onCreateItem() {
+//   const label = document.getElementById("create-item-label").value;
+//   if (!label) return;
+//   document.getElementById("create-item-label").value = "";
+//   shared.items.push(initItem(new Point(100, 100), "#ffff66", label));
+// }
+
+// function draw() {
+//   background("#cc6666");
+//   shared.items.forEach(stepItem);
+//   shared.items.forEach(drawItem);
+// }
+
+// function mousePressed() {
+//   for (const s of shared.items.slice().reverse()) {
+//     if (mousePressedItem(s)) break;
+//   }
+// }
+
+// function mouseReleased() {
+//   shared.items.forEach((s) => mouseReleasedItem(s));
+// }
+
+// function initItem(p = new Rect(), color = "red", label = "untitled") {
+//   push();
+//   const s = {};
+//   const width = textWidth(label) + 30;
+//   s.rect = new Rect(p.x - width * 0.5, p.y - 10, width, 40);
+//   s.color = color;
+//   s.label = label;
+//   pop();
+//   return s;
+// }
+
+// function stepItem(item) {
+//   if (item.inDrag && item.owner === my_id) {
+//     item.rect.l = mouseX + item.dragOffset.x;
+//     item.rect.t = mouseY + item.dragOffset.y;
+//   }
+// }
+
+// function drawItem(item) {
+//   push();
+
+//   //draw note
+//   fill(item.color);
+//   noStroke();
+//   rect(item.rect.l, item.rect.t, item.rect.w, item.rect.h);
+
+//   // draw border
+//   if (item.inDrag) {
+//     noFill();
+//     strokeWeight(3);
+//     stroke("black");
+//     rect(item.rect.l, item.rect.t, item.rect.w, item.rect.h);
+//   }
+
+//   // draw label
+//   noStroke();
+//   fill("black");
+//   textAlign(CENTER, CENTER);
+
+//   text(
+//     item.label,
+//     item.rect.l + 0.5 * item.rect.w,
+//     item.rect.t + 0.5 * item.rect.h
+//   );
+//   pop();
+// }
+
+// function mousePressedItem(item) {
+//   // @todo this probably needs a guard against two clients dragging notes at the same time, like drag2
+//   if (pointInRect(new Point(mouseX, mouseY), item.rect)) {
+//     item.inDrag = true;
+//     item.owner = my_id;
+//     item.dragOffset = new Point(item.rect.l - mouseX, item.rect.t - mouseY);
+
+//     const i = shared.items.indexOf(item);
+//     shared.items.splice(i, 1);
+//     shared.items.push(item);
+//     return true;
+//   }
+//   return false;
+// }
+
+// function mouseReleasedItem(item) {
+//   item.inDrag = false;
+//   item.owner = null;
+// }
