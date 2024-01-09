@@ -1,63 +1,24 @@
-import { circle } from 'p5';
-
-
-class Player {
-  constructor(id, x , y) {
-    this.id = id;
-    this.x = x;
-    this.y = y;
-  }
-
-  draw() {
-    circle(this.x, this.y, 20);
-  }
-}
-
-let shared;
-let myPlayer;
+let shared, my, guests;
 
 function preload() {
   partyConnect("wss://demoserver.p5party.org", "something");
-  shared = partyLoadShared("shared");
+  shared = partyLoadShared("shared", { players: []});
+  my = partyLoadMyShared();
+  guests = partyLoadGuestsShareds();
 }
 
 function setup() {
-  createCanvas(400, 400);
-  noStroke();
+  createCanvas(500, 400);
+  my.ball = { x: 0, y: 0, r: 20 };
 
-  const my_id = Math.random();
-  myPlayer = new Player(my_id, width/2, height/2);
-
-  if (partyIsHost()) {
-    shared.players = {};
-  }
-
-  shared.players[my_id] = myPlayer;
+  paartySubscribe("createBall", createBall);
 }
 
 function draw() {
-  background(220);
-
-  for (let id in shared.players) {
-    let player = shared.players[id];
-    player.draw();
-    console.log(player);
+  moveBall();
+  if (partyIsHost()) {
+    drawScene();
   }
-}
-
-function keyPressed() {
-  if (keyCode === 87) { // W
-    myPlayer.y -= 5;
-  } else if (keyCode === 83) { // S
-    myPlayer.y += 5;
-  } else if (keyCode === 65) { // A
-    myPlayer.x -= 5;
-  } else if (keyCode === 68) { // D
-    myPlayer.x += 5;
-  }
-
-  shared.players[myPlayer.id] = myPlayer;
-}
 
 // class Rect {
 //   constructor(l = 0, t = 0, w = 0, h = 0) {
