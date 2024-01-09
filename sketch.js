@@ -7,6 +7,7 @@ let dummy;
 let ratio;
 let everything = [];
 let spikes = [];
+let laps = 3;
 
 
 let divider1,divider2,divider3,divider4,eastwall1,westwall1,eastwall2,westwall2,eastwall3;
@@ -22,13 +23,14 @@ let respawntime = 200;
 
 let checkpoints = [];
 
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
   // noStroke()
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(500, 400,180,Rocket);
+  cheese = makeVehicle(500, 400,180,Sport);
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
   divider1 = new Wall(570,500,900,15,0);
@@ -67,7 +69,12 @@ function setup() {
 
   south6 = new Bend(703,515,12,10,-15, 1, true);
 
-  makecheckP(85*big,190*big, -180, checkpoints,100);
+  // finish/start 
+  makecheckP(500,270, 0, checkpoints, 215);
+
+  makecheckP(85,190, -180, checkpoints,100);
+  makecheckP(500, 130, -180, checkpoints, 60);
+  
   
 }
 
@@ -102,7 +109,7 @@ function respawn(checkNum,self,type){
   console.log(self);
   self.vehicle.body.remove();
   self.vehicle.face.remove();
-  self.bumper.remove();
+  // self.bumper.remove();
   // self = null;
   let point = checkpoints[checkNum];
   // self.vehicle.dead = false;
@@ -118,19 +125,20 @@ function makeVehicle(x,y,rotation,type){
 }
 class TowT{
   constructor(x,y,rotation){
+    this.type = TowT;
     this.facelength = 12;
     this.facewidth = 20;
     this.bodylength = 20;
     this.bodywidth = 16;
     this.vehicle = new Car(x,y,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 8.5, 11.5, 2, 1.7, this.handbrake, this.unhandbrake);
-    this.arm = new Sprite(x*big-this.bodylength-this.facelength*4/9,y*big);
+    this.arm = new Sprite(x*big+this.bodylength+this.facelength*4/9,y*big);
     this.vehicle.face.drag = 1.2;
     this.arm.w = this.facelength/3;
     this.arm.h = 1;
     this.arm.darg = 2;
     everything.push(this.arm);
     this.armbase = new GlueJoint(this.arm,this.vehicle.body);
-    this.object = new Sprite(x*big-this.bodylength-this.arm.w*2,y*big);
+    this.object = new Sprite(x*big+this.bodylength+this.arm.w*2,y*big);
     this.object.radius = this.facelength/4;
     this.object.drag = 1.5;
     this.object.bounciness = 1;
@@ -138,10 +146,11 @@ class TowT{
     // this.object.overlaps(this.vehicle.body);
     // this.object.overlaps(this.vehicle.face);
     balls.list.push(this.object);
+    everything.push(this.object);
     this.vehicle.id = balls.count;
     balls.count +=1;
     this.towline = new DistanceJoint(this.arm,this.object);
-    this.towline.offsetA.x = -1*this.arm.w/2;
+    this.towline.offsetA.x = 1*this.arm.w/2;
     this.towline.springiness = 0.6;
   }
   handbrake(){
@@ -157,32 +166,22 @@ class TowT{
       this.handbrake = false;
     }
   }
-  // grow(){
-  //   if (balls.list[this.id].radius < maxsize){
-  //     // console.log("grow");
-  //     balls.list[this.id].radius += growthrate;
-  //   }
-    
-  // }
-  // shrink(){
-  //   if (balls.list[this.id].radius > minsize){
-  //     // console.log("shrink");
-  //     balls.list[this.id].radius -= growthrate/2;
-  //   }
-  // }
-
-  // display(playerTrue){
-  //   // todo
-  //   this.vehicle.display(playerTrue);
-  // }
+  docar(){
+    this.vehicle.spikeCheck();
+    if (!this.vehicle.dead){
+      this.vehicle.drive();
+    }
+  }
+  
 }
 class Sport{
   constructor(x,y,rotation){
+    this.type = Sport;
     this.facelength = 15;
     this.facewidth = 19;
     this.bodylength = 16;
     this.bodywidth = 20;
-    this.bumper = new Sprite(x*big+this.facelength,y*big);
+    this.bumper = new Sprite(x*big-this.facelength,y*big);
     this.bumper.d = this.facewidth;
     this.bumper.drag = 2.5;
     this.bumper.bounciness = 0.8;
@@ -204,13 +203,16 @@ class Sport{
       this.handbrake = false;
     }
   }
-  // display(playerTrue){
-  //   // todo
-  //   this.vehicle.display(playerTrue);
-  // }
+  docar(){
+    this.vehicle.spikeCheck();
+    if (!this.vehicle.dead){
+      this.vehicle.drive();
+    }
+  }
 }
 class Delor{
   constructor(x,y,rotation){
+    this.type = Delor;
     this.facelength = 15;
     this.facewidth = 19;
     this.bodylength = 23;
@@ -259,20 +261,9 @@ class Delor{
 
   docar(){
     this.vehicle.spikeCheck();
-    if (!this.vehicle.dead && !keyIsDown(82)){
+    if (!this.vehicle.dead){
       this.vehicle.drive();
     }
-    else {
-      this.respawn(this.vehicle.checkpoint);
-    }
-  }
-  respawn(checkNum){
-    this.self = null;
-    this.vehicle.body.remove();
-    this.vehicle.face.remove();
-    let point = checkpoints[checkNum];
-    this.self = new Delor(point.x,point.y,this.self);
-    this.vehicle.dead = false;
   }
 
   // display(playerTrue){
@@ -337,19 +328,19 @@ class Rocket{
 
 class Car{
   constructor(x,y,rotation,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2){
-    this.body = new Sprite(x*big-backlength/2,y*big);
+    this.body = new Sprite(x*big+backlength/2,y*big);
     this.body.w = backlength;
     this.body.h = backwidth;
     
     everything.push(this.body);
-    this.face = new Sprite(x*big+facelength/2,y*big);
+    this.face = new Sprite(x*big-facelength/2,y*big);
     this.face.w = facelength;
     this.face.h = facewidth;
     
     everything.push(this.face);
     this.midsec = new GlueJoint(this.body,this.face);
 
-    this.body.rotation = rotation;
+    // this.body.rotation = rotation;
 
     this.body.drag = 2;
     this.body.rotationDrag = 3;
@@ -368,6 +359,7 @@ class Car{
     this.thing = thing;
     this.thing2 = thing2;
     this.checkpoint = 0;
+    this.lap = 1;
     this.dead = false;
     
     this.respawnCommit = 0;
@@ -401,9 +393,9 @@ class Car{
   }
 
   spawnCheck(){
-    for(let spot of checkpoints){
-      if(this.body.overlaps(spot.spot)||this.body.overlaps(spot.spot)){
-        this.checkpoint = spot.number;
+    for(let check of checkpoints){
+      if(this.body.overlaps(check.spot)||this.body.overlaps(check.spot)){
+        this.checkpoint = check.number;
       }
     }
   }
@@ -454,7 +446,7 @@ class Car{
       this.special();
     }
 
-    this.body.bearing = this.body.rotation-360;
+    this.body.bearing = this.body.rotation-180;
   
     this.body.applyForce(this.move);
     if (keyIsDown(87)||keyIsDown(32)){
@@ -549,7 +541,7 @@ class Spike{
 
 
 function makecheckP(x,y,angle,list,size){
-  let checker = new CheckP(x,y,angle,list.length,size);
+  let checker = new CheckP(x*big,y*big,angle,list.length,size);
   list.push(checker);
   checker.fix();
 }
@@ -565,7 +557,13 @@ class CheckP{
     this.x = x;
     this.y = y;
     this.spot = new Sprite(x*big,y*big);
-    this.spot.radius = size*big;
+    if (number !== 0){
+      this.spot.radius = size*big;
+    } 
+    else {
+      this.spot.h = size*big;
+      this.spot.w = 10*big;
+    }
     this.spot.layer = 0;
     this.spot.rotation = angle;
     this.spot.collider = "static";
