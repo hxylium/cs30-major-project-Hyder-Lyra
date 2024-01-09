@@ -9,6 +9,8 @@ let everything = [];
 let spikes = [];
 let laps = 3;
 
+let finsished = [];
+
 
 let divider1,divider2,divider3,divider4,eastwall1,westwall1,eastwall2,westwall2,eastwall3;
 
@@ -394,8 +396,17 @@ class Car{
 
   spawnCheck(){
     for(let check of checkpoints){
-      if(this.body.overlaps(check.spot)||this.body.overlaps(check.spot)){
-        this.checkpoint = check.number;
+      if(this.face.overlaps(check.spot)||this.body.overlaps(check.spot)){
+        if (check.number > this.checkpoint){
+          this.checkpoint = check.number;
+        }
+        else if(check.number === 0 && this.checkpoint === checkpoints.length-1){
+          this.checkpoint = check.number;
+          this.lap ++;
+          if (this.lap > laps){
+            finsished.push(this);
+          }
+        }
       }
     }
   }
