@@ -32,7 +32,7 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(500, 400,180,Sport);
+  cheese = makeVehicle(85, 190,0,Delor);
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
   divider1 = new Wall(570,500,900,15,0);
@@ -74,7 +74,7 @@ function setup() {
   // finish/start 
   makecheckP(500,270, 0, checkpoints, 215);
 
-  makecheckP(85,190, -180, checkpoints,100);
+  makecheckP(85,190, 90, checkpoints,100);
   makecheckP(500, 130, -180, checkpoints, 60);
   
   
@@ -122,6 +122,7 @@ function respawn(checkNum,self,type){
 function makeVehicle(x,y,rotation,type){
   let beep = new type(x,y,rotation);
   beep.vehicle.dead = false;
+  // beep.vehicle.spawnFix();
   beep.self = beep;
   return beep;
 }
@@ -169,6 +170,7 @@ class TowT{
     }
   }
   docar(){
+    this.vehicle.spawnCheck();
     this.vehicle.spikeCheck();
     if (!this.vehicle.dead){
       this.vehicle.drive();
@@ -206,6 +208,7 @@ class Sport{
     }
   }
   docar(){
+    this.vehicle.spawnCheck();
     this.vehicle.spikeCheck();
     if (!this.vehicle.dead){
       this.vehicle.drive();
@@ -221,7 +224,7 @@ class Delor{
     this.bodywidth = 20;
     // this.bumper = new Sprite(x+this.facelength,y);
     // this.bumper.d = this.facewidth;
-    this.vehicle = new Car(x,y,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11.5, 4.5, 2.3, this.blink, this.cooldown);
+    this.vehicle = new Car(x,y,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11.5, 4.5, 2.3, this.blink, this.cooldown, this.spawnFix);
     this.vehicle.phased = false;
     this.vehicle.timer = 0;
     this.vehicle.time = 300;
@@ -260,8 +263,12 @@ class Delor{
       }
     }
   }
+  spawnFix(){
+    console.log("ty");
+  }
 
   docar(){
+    this.vehicle.spawnCheck();
     this.vehicle.spikeCheck();
     if (!this.vehicle.dead){
       this.vehicle.drive();
@@ -279,7 +286,7 @@ class Rocket{
     this.facewidth = 19;
     this.bodylength = 16;
     this.bodywidth = 19.5;
-    this.bumper = new Sprite(x*big+this.facelength,y*big);
+    this.bumper = new Sprite(x*big-this.facelength,y*big);
     this.bumper.w = Math.sqrt((this.facewidth+1)**2/2);
     this.bumper.h = Math.sqrt((this.facewidth+1)**2/2);
     this.bumper.rotation = 45;
@@ -315,6 +322,7 @@ class Rocket{
     }
   }
   docar(){
+    this.vehicle.spawnCheck();
     this.vehicle.spikeCheck();
     if (!this.vehicle.dead){
       this.vehicle.drive();
@@ -329,7 +337,7 @@ class Rocket{
 }
 
 class Car{
-  constructor(x,y,rotation,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2){
+  constructor(x,y,rotation,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2, spawnfix){
     this.body = new Sprite(x*big+backlength/2,y*big);
     this.body.w = backlength;
     this.body.h = backwidth;
@@ -342,8 +350,8 @@ class Car{
     everything.push(this.face);
     this.midsec = new GlueJoint(this.body,this.face);
 
-    // this.body.rotation = rotation;
-
+    this.body.rotateTo(rotation,22);
+// this.body.rotation = rotation;
     this.body.drag = 2;
     this.body.rotationDrag = 3;
     this.body.bounciness = 0.8;
@@ -358,8 +366,12 @@ class Car{
     this.maxspeed = maxspeed;
     this.braking = braking;
     this.handling = handling;
+
     this.thing = thing;
     this.thing2 = thing2;
+
+    this.sFix = spawnfix;
+
     this.checkpoint = 0;
     this.lap = 1;
     this.dead = false;
@@ -410,30 +422,28 @@ class Car{
       }
     }
   }
+  spawnFix(){
+    
+    this.sFix();
+  }
 
   drive() {
-    // Math.abs(this.body.vel.x)+Math.abs(this.body.vel.y)
     if ( Math.abs(this.move) > 0){
       if((this.hanbrake === false||Math.abs(this.move) > 1.5)){
 
         if (keyIsDown(65)){
           this.turn -= this.handling*toZero(this.move);
-        // cheese.bearing = cheese.bare-90;
-        // cheese.applyForce(1);
         }
         if (keyIsDown(68)){
           this.turn += this.handling*toZero(this.move);
-        // cheese.bearing = cheese.bare+90;
-        // cheese.applyForce(1);
         }
-      // cheese.turn += toZero(cheese.turn)*;
+      
       }
     // else {
     //   console.log("handbrake stopped turning");
     // }
     }
     
-    // this.body.rotationSpeed += this.turn/6;
     this.body.applyTorque(this.turn/8);
     //special cleanup
     if (this.thing2 !== null){
