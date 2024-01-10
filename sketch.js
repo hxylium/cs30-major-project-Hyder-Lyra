@@ -74,8 +74,8 @@ function setup() {
   // finish/start 
   makecheckP(500,270, 0, checkpoints, 215);
 
-  makecheckP(85,190, 90, checkpoints,100);
-  makecheckP(500, 130, -180, checkpoints, 60);
+  makecheckP(85,190, 180, checkpoints,100);
+  makecheckP(500, 130, -90, checkpoints, 60);
   
   
 }
