@@ -32,7 +32,7 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(85, 190,0,Delor);
+  cheese = makeVehicle(500,270,0,Rocket);
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
   divider1 = new Wall(570,500,900,15,0);
@@ -64,15 +64,13 @@ function setup() {
 
   south5 = new Bend(1008,720,12,8,-7,-1);
   
-
-
   
   divider4 = new Wall(760, 820, 15, 300,0);
 
   south6 = new Bend(703,515,12,10,-15, 1, true);
 
   // finish/start 
-  makecheckP(500,270, 0, checkpoints, 215);
+  makecheckP(700,380, 0, checkpoints, 215);
 
   makecheckP(85,190, 180, checkpoints,100);
   makecheckP(500, 130, -90, checkpoints, 60);
@@ -224,7 +222,7 @@ class Delor{
     this.bodywidth = 20;
     // this.bumper = new Sprite(x+this.facelength,y);
     // this.bumper.d = this.facewidth;
-    this.vehicle = new Car(x,y,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11.5, 4.5, 2.3, this.blink, this.cooldown, this.spawnFix);
+    this.vehicle = new Car(x,y,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11.5, 4.5, 2.3, this.blink, this.cooldown, );
     this.vehicle.phased = false;
     this.vehicle.timer = 0;
     this.vehicle.time = 300;
@@ -262,9 +260,6 @@ class Delor{
         console.log("recharged");
       }
     }
-  }
-  spawnFix(){
-    console.log("ty");
   }
 
   docar(){
@@ -337,7 +332,7 @@ class Rocket{
 }
 
 class Car{
-  constructor(x,y,rotation,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2, spawnfix){
+  constructor(x,y,rotation,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2){
     this.body = new Sprite(x*big+backlength/2,y*big);
     this.body.w = backlength;
     this.body.h = backwidth;
@@ -370,7 +365,6 @@ class Car{
     this.thing = thing;
     this.thing2 = thing2;
 
-    this.sFix = spawnfix;
 
     this.checkpoint = 0;
     this.lap = 1;
@@ -421,10 +415,6 @@ class Car{
         }
       }
     }
-  }
-  spawnFix(){
-    
-    this.sFix();
   }
 
   drive() {
@@ -562,7 +552,7 @@ class Spike{
 
 
 function makecheckP(x,y,angle,list,size){
-  let checker = new CheckP(x*big,y*big,angle,list.length,size);
+  let checker = new CheckP(x,y,angle,list.length,size);
   list.push(checker);
   checker.fix();
 }
