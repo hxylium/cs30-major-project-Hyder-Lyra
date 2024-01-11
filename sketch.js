@@ -289,7 +289,7 @@ class Rocket{
     this.bumper.drag = 1;
     this.bumper.bounciness = 0;
     everything.push(this.bumper);
-    this.vehicle = new Car(x,y,lap,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.cooldown);
+    this.vehicle = new Car(x,y,lap,this.type,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.cooldown);
     this.front = new GlueJoint(this.bumper,this.vehicle.face);
     this.vehicle.handbrake = false;
     this.vehicle.cooldown = false;
@@ -334,7 +334,7 @@ class Rocket{
 }
 
 class Car{
-  constructor(x,y,rotation,lap,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2){
+  constructor(x,y,rotation,lap,type,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2){
     this.body = new Sprite(x*big+backlength/2,y*big);
     this.body.w = backlength;
     this.body.h = backwidth;
@@ -366,6 +366,8 @@ class Car{
 
     this.thing = thing;
     this.thing2 = thing2;
+
+    this.type = type;
 
 
     this.checkpoint = 0;
@@ -486,7 +488,16 @@ class Car{
     // this.turn -= toZero(this.turn)*this.handling;
     this.turn = 0;
   }
- 
+  respawn(){
+    if(keyIsDown(82)){
+      cheese.vehicle.respawnCommit += 1;
+      if(cheese.vehicle.respawnCommit >= respawntime){
+        cheese.vehicle.respawnCommit = 0;
+        cheese = respawn(cheese.vehicle.checkpoint,cheese, cheese.type);
+        checkPFix(checkpoints);
+      }
+    }
+  }
 
 }
 
