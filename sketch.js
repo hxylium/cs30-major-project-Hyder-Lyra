@@ -32,7 +32,7 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(500,270,0,Rocket);
+  cheese = makeVehicle(1000,870,1,0,Rocket);
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
   divider1 = new Wall(570,500,900,15,0);
@@ -72,8 +72,9 @@ function setup() {
   // finish/start 
   makecheckP(700,380, 0, checkpoints, 215);
 
-  makecheckP(85,190, 180, checkpoints,100);
-  makecheckP(500, 130, -90, checkpoints, 60);
+  makecheckP(110,270, 180, checkpoints,100);
+  makecheckP(850, 180, -90, checkpoints, 65);
+  makecheckP(990, 981, 0, checkpoints, 150);
   
   
 }
@@ -117,8 +118,8 @@ function respawn(checkNum,self,type){
   // self.vehicle.dead = false;
 }
 
-function makeVehicle(x,y,rotation,type){
-  let beep = new type(x,y,rotation);
+function makeVehicle(x,y,lap,rotation,type){
+  let beep = new type(x,y,lap,rotation);
   beep.vehicle.dead = false;
   // beep.vehicle.spawnFix();
   beep.self = beep;
@@ -275,7 +276,7 @@ class Delor{
   // }
 }
 class Rocket{
-  constructor(x,y,rotation){
+  constructor(x,y,lap,rotation){
     this.type = Rocket;
     this.facelength = 19;
     this.facewidth = 19;
@@ -288,7 +289,7 @@ class Rocket{
     this.bumper.drag = 1;
     this.bumper.bounciness = 0;
     everything.push(this.bumper);
-    this.vehicle = new Car(x,y,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.cooldown);
+    this.vehicle = new Car(x,y,lap,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.cooldown);
     this.front = new GlueJoint(this.bumper,this.vehicle.face);
     this.vehicle.handbrake = false;
     this.vehicle.cooldown = false;
@@ -319,6 +320,7 @@ class Rocket{
   docar(){
     this.vehicle.spawnCheck();
     this.vehicle.spikeCheck();
+    this.vehicle.displayLap();
     if (!this.vehicle.dead){
       this.vehicle.drive();
     }
@@ -332,7 +334,7 @@ class Rocket{
 }
 
 class Car{
-  constructor(x,y,rotation,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2){
+  constructor(x,y,rotation,lap,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2){
     this.body = new Sprite(x*big+backlength/2,y*big);
     this.body.w = backlength;
     this.body.h = backwidth;
@@ -367,7 +369,7 @@ class Car{
 
 
     this.checkpoint = 0;
-    this.lap = 1;
+    this.lap = lap;
     this.dead = false;
     
     this.respawnCommit = 0;
@@ -415,6 +417,10 @@ class Car{
         }
       }
     }
+  }
+
+  displayLap(){
+    text(this.lap, this.body.x-10*big,this.body.y-10*big);
   }
 
   drive() {
