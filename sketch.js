@@ -1,7 +1,3 @@
-
-
-
-
 let cheese;
 let dummy;
 let ratio;
