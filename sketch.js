@@ -97,28 +97,28 @@ function draw() {
 
 
 // TowT related things
-let growthrate = 0.5;
-let maxsize = 20;
-let minsize = 12/4;
+
 let balls = {
   list: [],
   count: 0,
 };
 
 
-function respawn(checkNum,self,type){
-  console.log(self);
+function respawn(checkNum,self,lap,type){
+  // console.log(self);
+  console.log(type);
   self.vehicle.body.remove();
   self.vehicle.face.remove();
   // self.bumper.remove();
   // self = null;
   let point = checkpoints[checkNum];
   // self.vehicle.dead = false;
-  return makeVehicle(point.x,point.y,point.spot.rotation, type);
+  return makeVehicle(point.x,point.y,lap,point.spot.rotation, type);
   // self.vehicle.dead = false;
 }
 
 function makeVehicle(x,y,lap,rotation,type){
+  console.log(type);
   let beep = new type(x,y,lap,rotation);
   beep.vehicle.dead = false;
   // beep.vehicle.spawnFix();
@@ -289,6 +289,7 @@ class Rocket{
     this.bumper.drag = 1;
     this.bumper.bounciness = 0;
     everything.push(this.bumper);
+    this.lap = lap;
     this.vehicle = new Car(x,y,lap,this.type,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.cooldown);
     this.front = new GlueJoint(this.bumper,this.vehicle.face);
     this.vehicle.handbrake = false;
@@ -334,7 +335,7 @@ class Rocket{
 }
 
 class Car{
-  constructor(x,y,rotation,lap,type,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2){
+  constructor(x,y,lap,type,rotation,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2){
     this.body = new Sprite(x*big+backlength/2,y*big);
     this.body.w = backlength;
     this.body.h = backwidth;
@@ -422,7 +423,9 @@ class Car{
   }
 
   displayLap(){
-    text(this.lap, this.body.x-10*big,this.body.y-10*big);
+    // let number = this.lap
+    let center = this.carCenter();
+    text(this.lap, center.x,center.y);
   }
 
   drive() {
@@ -490,10 +493,11 @@ class Car{
   }
   respawn(){
     if(keyIsDown(82)){
-      cheese.vehicle.respawnCommit += 1;
-      if(cheese.vehicle.respawnCommit >= respawntime){
-        cheese.vehicle.respawnCommit = 0;
-        cheese = respawn(cheese.vehicle.checkpoint,cheese, cheese.type);
+      this.respawnCommit += 1;
+      if(this.respawnCommit >= respawntime){
+        this.respawnCommit = 0;
+        // console.log(this.type);
+        cheese = respawn(this.checkpoint,cheese,this.lap, this.type);
         checkPFix(checkpoints);
       }
     }
