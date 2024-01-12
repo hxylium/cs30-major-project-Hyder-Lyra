@@ -84,14 +84,7 @@ function draw() {
   clear();
   
   cheese.docar();
-  if(keyIsDown(82)){
-    cheese.vehicle.respawnCommit += 1;
-    if(cheese.vehicle.respawnCommit >= respawntime){
-      cheese.vehicle.respawnCommit = 0;
-      cheese = respawn(cheese.vehicle.checkpoint,cheese, cheese.type);
-      checkPFix(checkpoints);
-    }
-  }
+
   camera.pos = cheese.vehicle.face.pos;
 }
 
@@ -105,23 +98,18 @@ let balls = {
 
 
 function respawn(checkNum,self,lap,type){
-  // console.log(self);
-  console.log(type);
   self.vehicle.body.remove();
   self.vehicle.face.remove();
-  // self.bumper.remove();
-  // self = null;
+  self.vehicle.respawnBar.remove();
+  self.vehicle.respawnShell.remove();
   let point = checkpoints[checkNum];
-  // self.vehicle.dead = false;
   return makeVehicle(point.x,point.y,lap,point.spot.rotation, type);
-  // self.vehicle.dead = false;
+
 }
 
 function makeVehicle(x,y,lap,rotation,type){
-  console.log(type);
   let beep = new type(x,y,lap,rotation);
   beep.vehicle.dead = false;
-  // beep.vehicle.spawnFix();
   beep.self = beep;
   return beep;
 }
@@ -322,6 +310,7 @@ class Rocket{
     this.vehicle.spawnCheck();
     this.vehicle.spikeCheck();
     this.vehicle.displayLap();
+    this.vehicle.respawn();
     if (!this.vehicle.dead){
       this.vehicle.drive();
     }
@@ -373,9 +362,23 @@ class Car{
 
     this.checkpoint = 0;
     this.lap = lap;
+    this.lapCounter = new Sprite(0,0,60,40);
+    this.lapCounter.collider = "none";
+    this.lapCounter.text = "Lap:" + this.lap + "/" + laps;
     this.dead = false;
     
     this.respawnCommit = 0;
+    this.respawnShell = new Sprite(0,0,300,20);
+    this.respawnShell.collider = "none";
+    this.respawnShell.color = 'white';
+    this.respawnShell.stroke = 'black';
+    this.respawnShell.layer = 4;
+    this.respawnBar = new Sprite(0,0,2,20);
+    this.respawnBar.collider = "none";
+    this.respawnBar.color = 'red';
+    this.respawnBar.stroke = 'none';
+    this.respawnShell.layer = 5;
+
   }
 
   special(){
@@ -408,7 +411,7 @@ class Car{
   spawnCheck(){
     for(let check of checkpoints){
       if(this.face.overlaps(check.spot)||this.body.overlaps(check.spot)){
-        if (check.number > this.checkpoint){
+        if (check.number === this.checkpoint +1){
           this.checkpoint = check.number;
         }
         else if(check.number === 0 && this.checkpoint === checkpoints.length-1){
@@ -423,9 +426,11 @@ class Car{
   }
 
   displayLap(){
-    // let number = this.lap
-    let center = this.carCenter();
-    text(this.lap, center.x,center.y);
+    // textSize(20);
+    // text(this.lap, windowHeight*3/4, windowWidth/4);
+    this.lapCounter.x = this.face.x-windowWidth/2+(this.lapCounter.w/2+5);
+    this.lapCounter.y = this.face.y-windowHeight/2+(this.lapCounter.h/2+5)+this.respawnShell.h;
+    this.lapCounter.text = "Lap:" + this.lap + "/" + laps;
   }
 
   drive() {
@@ -492,13 +497,26 @@ class Car{
     this.turn = 0;
   }
   respawn(){
+    // fill("white");
+    // rect(0,0,300, 20);
+    this.respawnShell.x = this.face.x-windowWidth/2+(this.respawnShell.w/2+5);
+    this.respawnShell.y = this.face.y-windowHeight/2+(this.respawnShell.h/2+5);
+    let bar = map(this.respawnCommit,0,respawntime,0,this.respawnShell.w);
+    // fill("red");
+    // rect(0,0,bar,18);
+    this.respawnBar.w = bar;
+    this.respawnBar.x = this.face.x-windowWidth/2+(this.respawnBar.w/2+5);
+    this.respawnBar.y = this.face.y-windowHeight/2+(this.respawnBar.h/2+5)
     if(keyIsDown(82)){
       this.respawnCommit += 1;
       if(this.respawnCommit >= respawntime){
         this.respawnCommit = 0;
-        // console.log(this.type);
         cheese = respawn(this.checkpoint,cheese,this.lap, this.type);
-        checkPFix(checkpoints);
+      }
+    }
+    else{
+      if(this.respawnCommit >0){
+        this.respawnCommit -= 0.5;
       }
     }
   }
@@ -575,14 +593,8 @@ class Spike{
 function makecheckP(x,y,angle,list,size){
   let checker = new CheckP(x,y,angle,list.length,size);
   list.push(checker);
-  checker.fix();
 }
-function checkPFix(list){
-  for (let checker of list){
-    // console.log(checker);
-    checker.fix();
-  }
-}
+
 
 class CheckP{
   constructor(x,y,angle,number,size){
@@ -598,13 +610,8 @@ class CheckP{
     }
     this.spot.layer = 0;
     this.spot.rotation = angle;
-    this.spot.collider = "static";
+    this.spot.collider = "none";
     this.number = number;
-  }
-  fix(){
-    for (let item of everything){
-      this.spot.overlaps(item);
-    }
   }
 }
 
