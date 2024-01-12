@@ -28,7 +28,7 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(1000,870,1,0,Rocket);
+  my.cheese = makeVehicle(1000,870,1,0,Rocket);
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
   divider1 = new Wall(570,500,900,15,0);
@@ -79,16 +79,16 @@ function setup() {
 function draw() {
   clear();
   
-  cheese.docar();
+  my.cheese.docar();
   if(keyIsDown(82)){
-    cheese.vehicle.respawnCommit += 1;
-    if(cheese.vehicle.respawnCommit >= respawntime){
-      cheese.vehicle.respawnCommit = 0;
-      cheese = respawn(cheese.vehicle.checkpoint,cheese, cheese.type);
+    my.cheese.vehicle.respawnCommit += 1;
+    if(my.cheese.vehicle.respawnCommit >= respawntime){
+      my.cheese.vehicle.respawnCommit = 0;
+      my.cheese = respawn(my.cheese.vehicle.checkpoint, my.cheese, my.cheese.type);
       checkPFix(checkpoints);
     }
   }
-  camera.pos = cheese.vehicle.face.pos;
+  camera.pos = my.cheese.vehicle.face.pos;
 }
 
 
@@ -493,7 +493,7 @@ class Car{
       if(this.respawnCommit >= respawntime){
         this.respawnCommit = 0;
         // console.log(this.type);
-        cheese = respawn(this.checkpoint,cheese,this.lap, this.type);
+        my.cheese = respawn(this.checkpoint, my.cheese,this.lap, this.type);
         checkPFix(checkpoints);
       }
     }
