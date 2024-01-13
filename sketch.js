@@ -380,6 +380,7 @@ class Car{
     this.lap = lap;
     this.lapCounter = new Sprite(0,0,60,40);
     this.lapCounter.collider = "none";
+    this.lapCounter.color = 'green';
     this.lapCounter.text = "Lap:" + this.lap + "/" + laps;
     this.dead = false;
     
