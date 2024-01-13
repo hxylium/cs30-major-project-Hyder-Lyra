@@ -20,7 +20,7 @@ let dwall1,dwall2;
 
 let cap;
 let death;
-let respawntime = 200;
+let respawntime = 150;
 
 
 let checkpoints = [];
@@ -101,7 +101,8 @@ function respawn(checkNum,self,lap,type){
   self.vehicle.body.remove();
   self.vehicle.face.remove();
   self.vehicle.respawnBar.remove();
-  self.vehicle.respawnShell.remove();
+  self.vehicle.lapCounter.remove();
+  self.vehicle.abilityBar.remove();
   let point = checkpoints[checkNum];
   return makeVehicle(point.x,point.y,lap,point.spot.rotation, type);
 
@@ -120,7 +121,7 @@ class TowT{
     this.facewidth = 20;
     this.bodylength = 20;
     this.bodywidth = 16;
-    this.vehicle = new Car(x,y,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 8.5, 11.5, 2, 1.7, this.handbrake, this.unhandbrake);
+    this.vehicle = new Car(x,y,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 8.5, 11.5, 2, 1.7, this.handbrake, this.unhandbrake,"Handbrake","HANDBRAKE!!");
     this.arm = new Sprite(x*big+this.bodylength+this.facelength*4/9,y*big);
     this.vehicle.face.drag = 1.2;
     this.arm.w = this.facelength/3;
@@ -142,6 +143,10 @@ class TowT{
     this.towline = new DistanceJoint(this.arm,this.object);
     this.towline.offsetA.x = 1*this.arm.w/2;
     this.towline.springiness = 0.6;
+
+    this.vehicle.timer = 300;
+    this.vehicle.time = 20;
+    this.abilityBar.barmin =20;
   }
   handbrake(){
     // handbrake
@@ -149,7 +154,8 @@ class TowT{
       this.move -= toZero(this.move);
     }
     this.body.speed -= toZero(this.body.speed)*10**-1;
-    console.log("handbrake");
+    this.timer = this.time;
+    // console.log("handbrake");
   }
   unhandbrake(){
     if(this.hanbrake === true){
@@ -159,6 +165,8 @@ class TowT{
   docar(){
     this.vehicle.spawnCheck();
     this.vehicle.spikeCheck();
+    this.vehicle.respawn();
+    this.vehicle.displayUI();
     if (!this.vehicle.dead){
       this.vehicle.drive();
     }
@@ -177,9 +185,13 @@ class Sport{
     this.bumper.drag = 2.5;
     this.bumper.bounciness = 0.8;
     everything.push(this.bumper);
-    this.vehicle = new Car(x,y,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 16, 3, 2.5, this.handbrake, this.unhandbrake);
+    this.vehicle = new Car(x,y,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 16, 3, 2.5, this.handbrake, this.unhandbrake, "Handbrake","HANDBRAKE!!");
     this.front = new GlueJoint(this.bumper,this.vehicle.face);
+
     this.vehicle.handbrake = false;
+    this.vehicle.timer = 300;
+    this.vehicle.time = 20;
+    // this.abilityBar.barmin =20;
   }
   handbrake(){
     // handbrake
@@ -187,7 +199,8 @@ class Sport{
       this.move -= toZero(this.move);
     }
     this.body.speed -= toZero(this.body.speed)*10**-1;
-    console.log("handbrake");
+    this.timer = this.time;
+    // console.log("handbrake");
   }
   unhandbrake(){
     if(this.hanbrake === true){
@@ -197,6 +210,8 @@ class Sport{
   docar(){
     this.vehicle.spawnCheck();
     this.vehicle.spikeCheck();
+    this.vehicle.respawn();
+    this.vehicle.displayUI();
     if (!this.vehicle.dead){
       this.vehicle.drive();
     }
@@ -211,7 +226,7 @@ class Delor{
     this.bodywidth = 20;
     // this.bumper = new Sprite(x+this.facelength,y);
     // this.bumper.d = this.facewidth;
-    this.vehicle = new Car(x,y,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11.5, 4.5, 2.3, this.blink, this.cooldown, );
+    this.vehicle = new Car(x,y,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11.5, 4.5, 2.3, this.blink, this.cooldown, "Blink", "On Cooldown");
     this.vehicle.phased = false;
     this.vehicle.timer = 0;
     this.vehicle.time = 300;
@@ -236,6 +251,7 @@ class Delor{
       this.timer ++;
       if (this.timer >= this.time){
         this.phased = false;
+        this.abilityBar.TopText = "UNBLINKED";
         for (let item of everything){
           this.body.collides(item);
           this.face.collides(item);
@@ -254,6 +270,8 @@ class Delor{
   docar(){
     this.vehicle.spawnCheck();
     this.vehicle.spikeCheck();
+    this.vehicle.respawn();
+    this.vehicle.displayUI();
     if (!this.vehicle.dead){
       this.vehicle.drive();
     }
@@ -278,7 +296,7 @@ class Rocket{
     this.bumper.bounciness = 0;
     everything.push(this.bumper);
     this.lap = lap;
-    this.vehicle = new Car(x,y,lap,this.type,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.cooldown);
+    this.vehicle = new Car(x,y,lap,this.type,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.cooldown,"Rocket","On Cooldown");
     this.front = new GlueJoint(this.bumper,this.vehicle.face);
     this.vehicle.handbrake = false;
     this.vehicle.cooldown = false;
@@ -286,8 +304,10 @@ class Rocket{
     this.vehicle.time = 200;
   }
   rocket(){
+    
     if (!this.cooldown){
       if(this.timer <=0){
+        
         this.cooldown = true;
         this.timer = this.time;
         this.body.applyForce(2000);
@@ -309,8 +329,8 @@ class Rocket{
   docar(){
     this.vehicle.spawnCheck();
     this.vehicle.spikeCheck();
-    this.vehicle.displayLap();
     this.vehicle.respawn();
+    this.vehicle.displayUI();
     if (!this.vehicle.dead){
       this.vehicle.drive();
     }
@@ -324,7 +344,7 @@ class Rocket{
 }
 
 class Car{
-  constructor(x,y,lap,type,rotation,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2){
+  constructor(x,y,lap,type,rotation,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2, backText,topText){
     this.body = new Sprite(x*big+backlength/2,y*big);
     this.body.w = backlength;
     this.body.h = backwidth;
@@ -354,11 +374,7 @@ class Car{
     this.braking = braking;
     this.handling = handling;
 
-    this.thing = thing;
-    this.thing2 = thing2;
-
     this.type = type;
-
 
     this.checkpoint = 0;
     this.lap = lap;
@@ -368,16 +384,12 @@ class Car{
     this.dead = false;
     
     this.respawnCommit = 0;
-    this.respawnShell = new Sprite(0,0,300,20);
-    this.respawnShell.collider = "none";
-    this.respawnShell.color = 'white';
-    this.respawnShell.stroke = 'black';
-    this.respawnShell.layer = 4;
-    this.respawnBar = new Sprite(0,0,2,20);
-    this.respawnBar.collider = "none";
-    this.respawnBar.color = 'red';
-    this.respawnBar.stroke = 'none';
-    this.respawnShell.layer = 5;
+    this.respawnBar = new Bar(300,20,5,5,"red","R to Respawn", '', respawntime, 0);
+
+    this.thing = thing;
+    this.thing2 = thing2;
+
+    this.abilityBar = new Bar(300,20,5,20+this.respawnBar.height, "turquoise", "Press Shift to " + backText, topText,200,0);
 
   }
 
@@ -417,6 +429,7 @@ class Car{
         else if(check.number === 0 && this.checkpoint === checkpoints.length-1){
           this.checkpoint = check.number;
           this.lap ++;
+          // console.log("NEW LAP");
           if (this.lap > laps){
             finsished.push(this);
           }
@@ -425,12 +438,16 @@ class Car{
     }
   }
 
-  displayLap(){
-    // textSize(20);
-    // text(this.lap, windowHeight*3/4, windowWidth/4);
+  displayUI(){
     this.lapCounter.x = this.face.x-windowWidth/2+(this.lapCounter.w/2+5);
-    this.lapCounter.y = this.face.y-windowHeight/2+(this.lapCounter.h/2+5)+this.respawnShell.h;
+    this.lapCounter.y = this.face.y-windowHeight/2+(this.lapCounter.h/2+5);
     this.lapCounter.text = "Lap:" + this.lap + "/" + laps;
+
+    this.abilityBar.update(this.timer);
+    this.abilityBar.display(this.face);
+
+    this.respawnBar.update(this.respawnCommit)
+    this.respawnBar.display(this.face);
   }
 
   drive() {
@@ -497,16 +514,6 @@ class Car{
     this.turn = 0;
   }
   respawn(){
-    // fill("white");
-    // rect(0,0,300, 20);
-    this.respawnShell.x = this.face.x-windowWidth/2+(this.respawnShell.w/2+5);
-    this.respawnShell.y = this.face.y-windowHeight/2+(this.respawnShell.h/2+5);
-    let bar = map(this.respawnCommit,0,respawntime,0,this.respawnShell.w);
-    // fill("red");
-    // rect(0,0,bar,18);
-    this.respawnBar.w = bar;
-    this.respawnBar.x = this.face.x-windowWidth/2+(this.respawnBar.w/2+5);
-    this.respawnBar.y = this.face.y-windowHeight/2+(this.respawnBar.h/2+5)
     if(keyIsDown(82)){
       this.respawnCommit += 1;
       if(this.respawnCommit >= respawntime){
@@ -594,8 +601,6 @@ function makecheckP(x,y,angle,list,size){
   let checker = new CheckP(x,y,angle,list.length,size);
   list.push(checker);
 }
-
-
 class CheckP{
   constructor(x,y,angle,number,size){
     this.x = x;
@@ -613,6 +618,57 @@ class CheckP{
     this.spot.collider = "none";
     this.number = number;
   }
+}
+
+class Bar{
+  constructor(width,height,xOffset,yOffset,colour,backText,topText,inmax,barmin){
+    this.back = new Sprite(0,0,width,height);
+    this.back.collider = "none";
+    this.back.color = 'white';
+    this.back.stroke = 'black';
+    this.back.layer = 4;
+    this.backText = backText;
+    this.progress = new Sprite(0,0,0,height);
+    this.progress.collider = "none";
+    this.progress.color = colour;
+    this.progress.stroke = 'black';
+    this.progress.layer = 4;
+    this.topText = topText;
+    this.width = width;
+    this.height = height;
+    this.xOffset =xOffset;
+    this.yOffset = yOffset;
+    this.inmax = inmax;
+    this.barmin = barmin;
+  }
+  display(face){
+    this.back.x = face.x-windowWidth/2+(this.back.w/2+this.xOffset);
+    this.back.y = face.y-windowWidth/2+(this.back.h/2+this.yOffset);
+
+    this.progress.x = face.x-windowWidth/2+(this.progress.w/2+this.xOffset);
+    this.progress.y = face.y-windowWidth/2+(this.progress.h/2+this.yOffset);
+  }
+  remove(){
+    this.back.remove();
+    this.progress.remove();
+  }
+  update(input){
+    let bar = map(input,0,this.inmax,this.barmin,this.width);
+    this.progress.w = bar;
+    if(this.progress.w >= this.width/3){
+      this.progress.text = this.topText;
+    }
+    else{
+      this.progress.text = '';
+    }
+    if(this.progress.w <= this.barmin){
+      this.back.text = this.backText;
+    }
+    else{
+      this.back.text = '';
+    }
+  }
+
 }
 
 function toZero(number){
