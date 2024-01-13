@@ -32,7 +32,7 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(1000,870,1,0,Rocket);
+  cheese = makeVehicle(700,380,1,0,Delor);
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
   divider1 = new Wall(570,500,900,15,0);
@@ -115,13 +115,13 @@ function makeVehicle(x,y,lap,rotation,type){
   return beep;
 }
 class TowT{
-  constructor(x,y,rotation){
+  constructor(x,y,lap,rotation){
     this.type = TowT;
     this.facelength = 12;
     this.facewidth = 20;
     this.bodylength = 20;
     this.bodywidth = 16;
-    this.vehicle = new Car(x,y,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 8.5, 11.5, 2, 1.7, this.handbrake, this.unhandbrake,"Handbrake","HANDBRAKE!!");
+    this.vehicle = new Car(x,y,lap,TowT,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 8.5, 11.5, 2, 1.7, this.handbrake, this.unhandbrake,"Handbrake","HANDBRAKE!!",20);
     this.arm = new Sprite(x*big+this.bodylength+this.facelength*4/9,y*big);
     this.vehicle.face.drag = 1.2;
     this.arm.w = this.facelength/3;
@@ -145,7 +145,6 @@ class TowT{
     this.towline.springiness = 0.6;
 
     this.vehicle.timer = 300;
-    this.vehicle.time = 20;
     this.abilityBar.barmin =20;
   }
   handbrake(){
@@ -174,7 +173,7 @@ class TowT{
   
 }
 class Sport{
-  constructor(x,y,rotation){
+  constructor(x,y,lap,rotation){
     this.type = Sport;
     this.facelength = 15;
     this.facewidth = 19;
@@ -185,13 +184,12 @@ class Sport{
     this.bumper.drag = 2.5;
     this.bumper.bounciness = 0.8;
     everything.push(this.bumper);
-    this.vehicle = new Car(x,y,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 16, 3, 2.5, this.handbrake, this.unhandbrake, "Handbrake","HANDBRAKE!!");
+    this.vehicle = new Car(x,y,lap,Sport,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 16, 3, 2.5, this.handbrake, this.unhandbrake, "Handbrake","HANDBRAKE!!",20);
     this.front = new GlueJoint(this.bumper,this.vehicle.face);
 
     this.vehicle.handbrake = false;
     this.vehicle.timer = 300;
-    this.vehicle.time = 20;
-    // this.abilityBar.barmin =20;
+    this.abilityBar.barmin =20;
   }
   handbrake(){
     // handbrake
@@ -218,7 +216,7 @@ class Sport{
   }
 }
 class Delor{
-  constructor(x,y,rotation){
+  constructor(x,y,lap,rotation){
     this.type = Delor;
     this.facelength = 15;
     this.facewidth = 19;
@@ -226,50 +224,69 @@ class Delor{
     this.bodywidth = 20;
     // this.bumper = new Sprite(x+this.facelength,y);
     // this.bumper.d = this.facewidth;
-    this.vehicle = new Car(x,y,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11.5, 4.5, 2.3, this.blink, this.cooldown, "Blink", "On Cooldown");
+    this.vehicle = new Car(x,y,lap,Delor,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11.5, 4.5, 2.3, this.blink, this.recharge, "Blink", "On Cooldown",350);
     this.vehicle.phased = false;
     this.vehicle.timer = 0;
-    this.vehicle.time = 300;
+    this.vehicle.abilityStop = 190;
+    this.vehicle.body.layer = 2;
+    this.vehicle.face.layer = 2;
     // this.front = new GlueJoint(this.bumper,this.vehicle.face);
   }
 
   blink(){
-    if (!this.phased){
-      if(this.timer <=0){
+    if (!this.phased && this.timer <= 0){
         this.phased = true;
-        this.timer = 0;
+        this.timer = this.time;
+        this.body.stroke = 'yellow';
+        this.face.stroke = 'yellow';
         for (let item of everything){
           this.body.overlaps(item);
           this.face.overlaps(item);
         }
         console.log("blinked");
-      }
     }
   }
-  cooldown(){
+  recharge(){
     if(this.phased){
-      this.timer ++;
-      if (this.timer >= this.time){
+      this.timer --;
+      if (this.timer <= this.time-this.abilityStop){
         this.phased = false;
-        this.abilityBar.TopText = "UNBLINKED";
+        this.body.stroke = 'black';
+        this.face.stroke = 'black';
+        this.abilityBar.topText = "UNBLINKED";
+        this.abilityBar.progress.color = 'red';
         for (let item of everything){
           this.body.collides(item);
           this.face.collides(item);
         }
-        console.log("unblinked");
+      }
+      else if (this.timer <= this.time-this.abilityStop+40){
+        this.abilityBar.progress.color = "orange";     
+        this.body.stroke = 'orange';
+        this.face.stroke = 'orange';
+      }
+      else if (this.timer <= this.time-this.abilityStop+70){
+        this.abilityBar.progress.color = "gold";
+        this.body.stroke = 'gold';
+        this.face.stroke = 'gold';
       }
     }
     else{
-      this.timer --;
       if (this.timer <=0){
-        console.log("recharged");
+        this.abilityBar.topText = "On Cooldown";
+        this.abilityBar.progress.color = "yellow";
+      }
+      else{
+        this.timer --;
       }
     }
   }
 
   docar(){
     this.vehicle.spawnCheck();
-    this.vehicle.spikeCheck();
+    if(!this.vehicle.phased){
+      this.vehicle.spikeCheck();
+    }
     this.vehicle.respawn();
     this.vehicle.displayUI();
     if (!this.vehicle.dead){
@@ -296,12 +313,10 @@ class Rocket{
     this.bumper.bounciness = 0;
     everything.push(this.bumper);
     this.lap = lap;
-    this.vehicle = new Car(x,y,lap,this.type,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.cooldown,"Rocket","On Cooldown");
+    this.vehicle = new Car(x,y,lap,this.type,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.recharge,"Rocket","On Cooldown",200);
     this.front = new GlueJoint(this.bumper,this.vehicle.face);
     this.vehicle.handbrake = false;
     this.vehicle.cooldown = false;
-    this.vehicle.timer = 0;
-    this.vehicle.time = 200;
   }
   rocket(){
     
@@ -317,12 +332,12 @@ class Rocket{
     }
   }
 
-  cooldown(){
+  recharge(){
     if(this.cooldown){
       this.timer --;
       if (this.timer <=0){
         this.cooldown = false;
-        console.log("recharged");
+        // console.log("recharged");
       }
     }
   }
@@ -344,7 +359,7 @@ class Rocket{
 }
 
 class Car{
-  constructor(x,y,lap,type,rotation,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2, backText,topText){
+  constructor(x,y,lap,type,rotation,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2, backText,topText, abilityTime){
     this.body = new Sprite(x*big+backlength/2,y*big);
     this.body.w = backlength;
     this.body.h = backwidth;
@@ -385,12 +400,14 @@ class Car{
     this.dead = false;
     
     this.respawnCommit = 0;
-    this.respawnBar = new Bar(300,20,5,5,"red","R to Respawn", '', respawntime, 0);
+    this.respawnBar = new Bar(300,20,5,10+this.lapCounter.h,"red","R to Respawn", '', respawntime, 0);
 
     this.thing = thing;
     this.thing2 = thing2;
 
-    this.abilityBar = new Bar(300,20,5,20+this.respawnBar.height, "turquoise", "Press Shift to " + backText, topText,200,0);
+    this.abilityBar = new Bar(300,20,5,10+this.respawnBar.height+this.respawnBar.yOffset, "turquoise", "Press Shift to " + backText, topText,abilityTime,0);
+    this.timer = 0;
+    this.time = abilityTime;
 
   }
 
@@ -538,6 +555,7 @@ class Wall{
     this.cement = new Sprite(x*big,y*big,width*big,height*big);
     this.cement.collider = "static";
     this.cement.rotation = rotation;
+    this.cement.layer = 1;
     everything.push(this.cement);
   }
 }
@@ -592,6 +610,7 @@ class Spike{
     ]);
     this.metal.collider = "static";
     this.metal.rotation = rotation;
+    this.metal.layer = 0.2
     everything.push(this.metal);
     spikes.push(this.metal);
   }
@@ -644,10 +663,10 @@ class Bar{
   }
   display(face){
     this.back.x = face.x-windowWidth/2+(this.back.w/2+this.xOffset);
-    this.back.y = face.y-windowWidth/2+(this.back.h/2+this.yOffset);
+    this.back.y = face.y-windowHeight/2+(this.back.h/2+this.yOffset);
 
     this.progress.x = face.x-windowWidth/2+(this.progress.w/2+this.xOffset);
-    this.progress.y = face.y-windowWidth/2+(this.progress.h/2+this.yOffset);
+    this.progress.y = face.y-windowHeight/2+(this.progress.h/2+this.yOffset);
   }
   remove(){
     this.back.remove();
