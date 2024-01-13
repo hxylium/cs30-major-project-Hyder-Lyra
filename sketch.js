@@ -633,7 +633,7 @@ class Bar{
     this.progress.collider = "none";
     this.progress.color = colour;
     this.progress.stroke = 'black';
-    this.progress.layer = 4;
+    this.progress.layer = 5;
     this.topText = topText;
     this.width = width;
     this.height = height;
