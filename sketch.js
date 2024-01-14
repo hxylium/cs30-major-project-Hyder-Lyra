@@ -11,15 +11,12 @@ let laps = 3;
 
 let finsished = [];
 
-
+// map
 let divider1,divider2,divider3,divider4,eastwall1,westwall1,eastwall2,westwall2,eastwall3;
-
 let south1, south2, south3, south4, south5, south6;
-
 let dwall1,dwall2;
 
-let cap;
-let death;
+
 let respawntime = 150;
 
 
@@ -32,7 +29,7 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(700,380,1,0,TowT,0);
+  cheese = makeVehicle(700,380,1,0,Swing,0);
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
   divider1 = new Wall(570,500,900,15,0);
@@ -89,14 +86,6 @@ function draw() {
 }
 
 
-// TowT related things
-
-let balls = {
-  list: [],
-  count: 0,
-};
-
-
 function respawn(checkNum,self,lap,type){
   let point = checkpoints[checkNum];
   self.vehicle.body.remove();
@@ -114,53 +103,47 @@ function makeVehicle(x,y,lap,rotation,type,checkpoint){
   beep.self = beep;
   return beep;
 }
-class TowT{
+class Swing{
   constructor(x,y,lap,rotation,checkpoint){
-    this.type = TowT;
-    this.facelength = 12;
-    this.facewidth = 20;
-    this.bodylength = 20;
-    this.bodywidth = 16;
-    this.vehicle = new Car(x,y,lap,TowT,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 8.5, 11.5, 2, 1.7, this.handbrake, this.unhandbrake,"Handbrake","HANDBRAKE!!",300,checkpoint);
-    this.arm = new Sprite(x*big+this.bodylength+this.facelength*4/9,y*big);
-    this.vehicle.face.drag = 1.2;
-    this.arm.w = this.facelength/3;
-    this.arm.h = 1;
-    this.arm.darg = 2;
-    everything.push(this.arm);
-    this.armbase = new GlueJoint(this.arm,this.vehicle.body);
-    this.object = new Sprite(x*big+this.bodylength+this.arm.w*6,y*big);
-    this.object.radius = this.facelength/4;
-    this.object.drag = 1.5;
-    this.object.bounciness = 1;
-    // this.object.smallest = this.facelength/7;
-    // this.object.overlaps(this.vehicle.body);
-    // this.object.overlaps(this.vehicle.face);
-    balls.list.push(this.object);
-    everything.push(this.object);
-    this.vehicle.id = balls.count;
-    balls.count +=1;
-    this.towline = new DistanceJoint(this.arm,this.object);
-    this.towline.offsetA.x = 1*this.arm.w/2;
-    // this.towline.springiness = 0.6;
+    this.type = Swing;
+    this.facelength = 18;
+    this.facewidth = 15;
+    this.bodylength = 18;
+    this.bodywidth = 18;
+    this.vehicle = new Car(x,y,lap,Swing,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 7.5, 11.5, 3, 1.4, this.grapple, this.ungrapple,"Grapple","SWINGIN'!!",300,checkpoint);
 
     this.vehicle.timer = 0;
+    this.vehicle.grappled = false;
   }
-  handbrake(){
-    // handbrake
-    for (let i = 0; i < 20; i++){
-      this.move -= toZero(this.move);
+  
+  grapple(){
+    if (!this.grappled){
+      this.hook = new Sprite(mouse.x,mouse.y,0);
+      this.hook.collider ='k';
+      // for (let item of everything){
+      //   this.hook.overlaps(item);
+      // }
+      this.towlineA = new DistanceJoint(this.face,this.hook);
+      this.towlineB = new DistanceJoint(this.body,this.hook);
+
+      // this.towlineA.springiness = 1;
+      // this.towlineB.springiness = 1;
+      this.timer = 300;
+      this.grappled = true;
     }
-    this.body.speed -= toZero(this.body.speed)*10**-1;
-    this.timer = this.time;
-    // console.log("handbrake");
   }
-  unhandbrake(){
-    this.timer = 0;
-    if(this.handbrake === true){
-      this.handbrake = false;
+  ungrapple(){
+    if (!keyIsDown(16) && this.grappled || this.dead){
+      this.hook.remove();
+      this.towlineA.remove();
+      this.towlineB.remove();
+      this.timer = 0;
+      this.grappled = false;
     }
+    
   }
+
+
   docar(){
     this.vehicle.spawnCheck();
     this.vehicle.spikeCheck();
@@ -169,6 +152,7 @@ class TowT{
     if (!this.vehicle.dead){
       this.vehicle.drive();
     }
+    this.vehicle.specialCleanup();
   }
   
 }
@@ -214,6 +198,7 @@ class Sport{
     if (!this.vehicle.dead){
       this.vehicle.drive();
     }
+    this.vehicle.specialCleanup();
   }
 }
 class Delor{
@@ -285,6 +270,15 @@ class Delor{
 
   docar(){
     this.vehicle.spawnCheck();
+    this.vehicle.spikeCheck();
+    this.vehicle.respawn();
+    this.vehicle.displayUI();
+    if (!this.vehicle.dead){
+      this.vehicle.drive();
+    }
+    this.vehicle.specialCleanup();
+  }docar(){
+    this.vehicle.spawnCheck();
     if(!this.vehicle.phased){
       this.vehicle.spikeCheck();
     }
@@ -343,6 +337,15 @@ class Rocket{
     }
   }
   docar(){
+    this.vehicle.spawnCheck();
+    this.vehicle.spikeCheck();
+    this.vehicle.respawn();
+    this.vehicle.displayUI();
+    if (!this.vehicle.dead){
+      this.vehicle.drive();
+    }
+    this.vehicle.specialCleanup();
+  }docar(){
     this.vehicle.spawnCheck();
     this.vehicle.spikeCheck();
     this.vehicle.respawn();
@@ -487,10 +490,10 @@ class Car{
     }
     
     this.body.applyTorque(this.turn/8);
-    //special cleanup
-    if (this.thing2 !== null){
-      this.specialCleanup();
-    }
+    // //special cleanup
+    // if (this.thing2 !== null){
+    //   this.specialCleanup();
+    // }
 
     // gas
     if (keyIsDown(87)){
