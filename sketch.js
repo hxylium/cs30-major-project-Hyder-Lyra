@@ -29,7 +29,7 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(700,380,1,0,Swing,0);
+  cheese = makeVehicle(700,380,1,0,Bur,0);
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
   divider1 = new Wall(570,500,900,15,0);
@@ -102,6 +102,80 @@ function makeVehicle(x,y,lap,rotation,type,checkpoint){
   beep.vehicle.dead = false;
   beep.self = beep;
   return beep;
+}
+
+class Bur{
+  constructor(x,y,lap,rotation,checkpoint){
+    this.type = Bur;
+    this.facelength = 9;
+    this.facewidth = 18;
+    this.bodylength = 9;
+    this.bodywidth = 18;
+    this.vehicle = new Car(x,y,lap,Bur,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 7.5, 9.5, 3, 0.3, this.puff, this.unpuff,"Pufferfish","SPIKE!!",300,checkpoint);
+
+    this.vehicle.timer = 0;
+    this.vehicle.puffed = false;
+    this.vehicle.pokeys = [];
+    this.vehicle.bones = [];
+  }
+  
+  puff(){
+    this.move = 0;
+    if (!this.puffed){
+      let mid = this.carCenter();
+      // console.log(mid);
+      let radius = 18;
+  
+      this.pokeys.push(new Spike(mid.x-1*radius,mid.y+0*radius,180,true));
+      this.pokeys.push(new Spike(mid.x-0.71*radius,mid.y-0.71*radius,225,true));
+      this.pokeys.push(new Spike(mid.x+0*radius,mid.y-1*radius,270,true));
+      this.pokeys.push(new Spike(mid.x+0.71*radius,mid.y-0.71*radius,315,true));
+      this.pokeys.push(new Spike(mid.x+1*radius,mid.y+0*radius,0,true));
+      this.pokeys.push(new Spike(mid.x+0.71*radius,mid.y+0.71*radius,45,true));
+      this.pokeys.push(new Spike(mid.x+0*radius,mid.y+1*radius,90));
+      this.pokeys.push(new Spike(mid.x-0.71*radius,mid.y+0.71*radius,135,true));
+
+      for (let spike of this.pokeys){
+        this.bones.push(new GlueJoint(this.face, spike.metal));
+        spike.metal.collider = 'dynamic';
+      }
+      // this.bones.push(new DistanceJoint(this.face,this.pokeys[0].metal));
+      // this.bones.push(new DistanceJoint(this.face,this.pokeys[1].metal));
+      // this.bones.push(new DistanceJoint(this.face,this.pokeys[2].metal));
+
+      this.timer = 300;
+      this.puffed = true;
+    }
+  }
+  unpuff(){
+    if (!keyIsDown(16) && this.puffed || this.dead){
+      for (let spike of this.pokeys){
+        spike.metal.remove();
+      }
+      for (let bone of this.bones){
+        bone.remove();
+      }
+      this.pokeys = [];
+      this.bones = [];
+
+      this.timer = 0;
+      this.puffed = false;
+    }
+    
+  }
+
+
+  docar(){
+    this.vehicle.spawnCheck();
+    this.vehicle.spikeCheck();
+    this.vehicle.respawn();
+    this.vehicle.displayUI();
+    if (!this.vehicle.dead){
+      this.vehicle.drive();
+    }
+    this.vehicle.specialCleanup();
+  }
+  
 }
 class Swing{
   constructor(x,y,lap,rotation,checkpoint){
@@ -423,7 +497,7 @@ class Car{
   }
 
   carCenter(){
-    return {x:(this.body.x+this.face.x)/2, y: (this.body.y+this.face.y)/2};
+    return {x:(this.body.x/big+this.face.x/big)/2, y: (this.body.y/big+this.face.y/big)/2};
   }
 
   die(){
@@ -604,15 +678,24 @@ class Bend{
   }
 }
 class Spike{
-  constructor(x,y,rotation){
+  constructor(x,y,rotation,puff){
     let thing = 20;
     let thang = 6;
+    let mode;
+    if (puff){
+      mode = 'd';
+    }
+    else{
+      mode = 's';
+    }
     this.metal = new Sprite(x*big,y*big, [
       [thing*big, thang*big],
       [-1*thing*big, thang*big],
       [0, -12*big]
-    ]);
-    this.metal.collider = "static";
+    ],mode);
+    this.metal.mass = 0;
+    // this.metal.drag = -1;
+    
     this.metal.rotation = rotation;
     this.metal.layer = 0.2
     everything.push(this.metal);
