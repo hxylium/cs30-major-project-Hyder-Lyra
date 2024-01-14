@@ -29,7 +29,7 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(700,380,1,0,Bur,0);
+  cheese = makeVehicle(700,380,1,0,Delor,0);
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
   divider1 = new Wall(570,500,900,15,0);
@@ -304,7 +304,7 @@ class Delor{
   blink(){
     if (!this.phased && this.timer <= 0){
         this.phased = true;
-        this.timer = this.time;
+        this.timer = 350;
         this.body.stroke = 'yellow';
         this.face.stroke = 'yellow';
         for (let item of everything){
@@ -362,6 +362,7 @@ class Delor{
     if (!this.vehicle.dead){
       this.vehicle.drive();
     }
+    this.vehicle.specialCleanup();
   }
 
   // display(playerTrue){
