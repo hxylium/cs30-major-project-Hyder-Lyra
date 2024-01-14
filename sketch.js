@@ -29,7 +29,7 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(700,380,1,0,Bur,0);
+  cheese = makeVehicle(700,380,1,0,Sport,0);
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
   divider1 = new Wall(570,500,900,15,0);
@@ -136,13 +136,10 @@ class Bur{
       this.pokeys.push(new Spike(mid.x-0.71*radius,mid.y+0.71*radius,135,true));
 
       for (let spike of this.pokeys){
-        spike.collider = 'dynamic';
+        spike.metal.collider = 'dynamic';
         this.bones.push(new GlueJoint(this.face, spike.metal));
         
       }
-      // this.bones.push(new DistanceJoint(this.face,this.pokeys[0].metal));
-      // this.bones.push(new DistanceJoint(this.face,this.pokeys[1].metal));
-      // this.bones.push(new DistanceJoint(this.face,this.pokeys[2].metal));
 
       this.timer = 300;
       this.puffed = true;
@@ -243,27 +240,28 @@ class Sport{
     this.bumper.drag = 2.5;
     this.bumper.bounciness = 0.8;
     everything.push(this.bumper);
-    this.vehicle = new Car(x,y,lap,Sport,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 16, 3, 2.5, this.handbrake, this.unhandbrake, "Handbrake","HANDBRAKE!!",300,checkpoint);
+    this.vehicle = new Car(x,y,lap,Sport,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 16, 3, 2.5, this.hbrake, this.unhbrake, "Handbrake","HANDBRAKE!!",300,checkpoint);
     this.front = new GlueJoint(this.bumper,this.vehicle.face);
 
     this.vehicle.handbrake = false;
     this.vehicle.timer = 0;
     // this.vehicle.abilityBar.barmin =20;
   }
-  handbrake(){
+  hbrake(){
     // handbrake
+    this.timer = 300;
     for (let i = 0; i < 20; i++){
       this.move -= toZero(this.move);
     }
     this.body.speed -= toZero(this.body.speed)*10**-1;
-    this.timer = this.time;
+    
     // console.log("handbrake");
   }
-  unhandbrake(){
-    this.timer = 0;
-    if(this.handbrake === true){
-      this.handbrake = false;
+  unhbrake(){
+    if (!keyIsDown(16)){
+      this.timer = 0;
     }
+    this.handbrake = false;
   }
   docar(){
     this.vehicle.spawnCheck();
@@ -304,7 +302,9 @@ class Delor{
           this.body.overlaps(item);
           this.face.overlaps(item);
         }
-        console.log("blinked");
+        this.abilityBar.topText = "Blinked";
+        this.abilityBar.progress.color = "yellow";
+        // console.log("blinked");
     }
   }
   recharge(){
@@ -334,8 +334,8 @@ class Delor{
     }
     else{
       if (this.timer <=0){
-        this.abilityBar.topText = "On Cooldown";
-        this.abilityBar.progress.color = "yellow";
+        // this.abilityBar.topText = "Blinked";
+        // this.abilityBar.progress.color = "yellow";
       }
       else{
         this.timer --;
@@ -344,15 +344,6 @@ class Delor{
   }
 
   docar(){
-    this.vehicle.spawnCheck();
-    this.vehicle.spikeCheck();
-    this.vehicle.respawn();
-    this.vehicle.displayUI();
-    if (!this.vehicle.dead){
-      this.vehicle.drive();
-    }
-    this.vehicle.specialCleanup();
-  }docar(){
     this.vehicle.spawnCheck();
     if(!this.vehicle.phased){
       this.vehicle.spikeCheck();
@@ -420,14 +411,6 @@ class Rocket{
       this.vehicle.drive();
     }
     this.vehicle.specialCleanup();
-  }docar(){
-    this.vehicle.spawnCheck();
-    this.vehicle.spikeCheck();
-    this.vehicle.respawn();
-    this.vehicle.displayUI();
-    if (!this.vehicle.dead){
-      this.vehicle.drive();
-    }
   }
   
   
@@ -729,7 +712,7 @@ class CheckP{
 }
 
 class Bar{
-  constructor(width,height,xOffset,yOffset,colour,backText,topText,inmax,barmin){
+  constructor(width,height,xOffset,yOffset,colour,backText,topText,inmax){
     this.back = new Sprite(0,0,width,height);
     this.back.collider = "none";
     this.back.color = 'white';
@@ -747,7 +730,6 @@ class Bar{
     this.xOffset =xOffset;
     this.yOffset = yOffset;
     this.inmax = inmax;
-    this.barmin = barmin;
   }
   display(face){
     this.back.x = face.x-windowWidth/2+(this.back.w/2+this.xOffset);
@@ -761,7 +743,7 @@ class Bar{
     this.progress.remove();
   }
   update(input){
-    let bar = map(input,0,this.inmax,this.barmin,this.width);
+    let bar = map(input,0,this.inmax,0,this.width);
     this.progress.w = bar;
     if(this.progress.w >= this.width/3){
       this.progress.text = this.topText;
@@ -769,7 +751,7 @@ class Bar{
     else{
       this.progress.text = '';
     }
-    if(this.progress.w <= this.barmin){
+    if(this.progress.w <= 0){
       this.back.text = this.backText;
     }
     else{
