@@ -32,7 +32,7 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(700,380,1,0,Delor);
+  cheese = makeVehicle(700,380,1,0,TowT,0);
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
   divider1 = new Wall(570,500,900,15,0);
@@ -98,30 +98,30 @@ let balls = {
 
 
 function respawn(checkNum,self,lap,type){
+  let point = checkpoints[checkNum];
   self.vehicle.body.remove();
   self.vehicle.face.remove();
   self.vehicle.respawnBar.remove();
   self.vehicle.lapCounter.remove();
   self.vehicle.abilityBar.remove();
-  let point = checkpoints[checkNum];
-  return makeVehicle(point.x,point.y,lap,point.spot.rotation, type);
+  return makeVehicle(point.x,point.y,lap,point.spot.rotation, type,checkNum);
 
 }
 
-function makeVehicle(x,y,lap,rotation,type){
-  let beep = new type(x,y,lap,rotation);
+function makeVehicle(x,y,lap,rotation,type,checkpoint){
+  let beep = new type(x,y,lap,rotation,checkpoint);
   beep.vehicle.dead = false;
   beep.self = beep;
   return beep;
 }
 class TowT{
-  constructor(x,y,lap,rotation){
+  constructor(x,y,lap,rotation,checkpoint){
     this.type = TowT;
     this.facelength = 12;
     this.facewidth = 20;
     this.bodylength = 20;
     this.bodywidth = 16;
-    this.vehicle = new Car(x,y,lap,TowT,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 8.5, 11.5, 2, 1.7, this.handbrake, this.unhandbrake,"Handbrake","HANDBRAKE!!",20);
+    this.vehicle = new Car(x,y,lap,TowT,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 8.5, 11.5, 2, 1.7, this.handbrake, this.unhandbrake,"Handbrake","HANDBRAKE!!",300,checkpoint);
     this.arm = new Sprite(x*big+this.bodylength+this.facelength*4/9,y*big);
     this.vehicle.face.drag = 1.2;
     this.arm.w = this.facelength/3;
@@ -129,7 +129,7 @@ class TowT{
     this.arm.darg = 2;
     everything.push(this.arm);
     this.armbase = new GlueJoint(this.arm,this.vehicle.body);
-    this.object = new Sprite(x*big+this.bodylength+this.arm.w*2,y*big);
+    this.object = new Sprite(x*big+this.bodylength+this.arm.w*6,y*big);
     this.object.radius = this.facelength/4;
     this.object.drag = 1.5;
     this.object.bounciness = 1;
@@ -142,10 +142,9 @@ class TowT{
     balls.count +=1;
     this.towline = new DistanceJoint(this.arm,this.object);
     this.towline.offsetA.x = 1*this.arm.w/2;
-    this.towline.springiness = 0.6;
+    // this.towline.springiness = 0.6;
 
-    this.vehicle.timer = 300;
-    this.abilityBar.barmin =20;
+    this.vehicle.timer = 0;
   }
   handbrake(){
     // handbrake
@@ -157,7 +156,8 @@ class TowT{
     // console.log("handbrake");
   }
   unhandbrake(){
-    if(this.hanbrake === true){
+    this.timer = 0;
+    if(this.handbrake === true){
       this.handbrake = false;
     }
   }
@@ -173,7 +173,7 @@ class TowT{
   
 }
 class Sport{
-  constructor(x,y,lap,rotation){
+  constructor(x,y,lap,rotation,checkpoint){
     this.type = Sport;
     this.facelength = 15;
     this.facewidth = 19;
@@ -184,12 +184,12 @@ class Sport{
     this.bumper.drag = 2.5;
     this.bumper.bounciness = 0.8;
     everything.push(this.bumper);
-    this.vehicle = new Car(x,y,lap,Sport,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 16, 3, 2.5, this.handbrake, this.unhandbrake, "Handbrake","HANDBRAKE!!",20);
+    this.vehicle = new Car(x,y,lap,Sport,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 16, 3, 2.5, this.handbrake, this.unhandbrake, "Handbrake","HANDBRAKE!!",300,checkpoint);
     this.front = new GlueJoint(this.bumper,this.vehicle.face);
 
     this.vehicle.handbrake = false;
-    this.vehicle.timer = 300;
-    this.abilityBar.barmin =20;
+    this.vehicle.timer = 0;
+    // this.vehicle.abilityBar.barmin =20;
   }
   handbrake(){
     // handbrake
@@ -201,7 +201,8 @@ class Sport{
     // console.log("handbrake");
   }
   unhandbrake(){
-    if(this.hanbrake === true){
+    this.timer = 0;
+    if(this.handbrake === true){
       this.handbrake = false;
     }
   }
@@ -216,7 +217,7 @@ class Sport{
   }
 }
 class Delor{
-  constructor(x,y,lap,rotation){
+  constructor(x,y,lap,rotation,checkpoint){
     this.type = Delor;
     this.facelength = 15;
     this.facewidth = 19;
@@ -224,7 +225,7 @@ class Delor{
     this.bodywidth = 20;
     // this.bumper = new Sprite(x+this.facelength,y);
     // this.bumper.d = this.facewidth;
-    this.vehicle = new Car(x,y,lap,Delor,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11.5, 4.5, 2.3, this.blink, this.recharge, "Blink", "On Cooldown",350);
+    this.vehicle = new Car(x,y,lap,Delor,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11.5, 4.5, 2.3, this.blink, this.recharge, "Blink", "On Cooldown",350,checkpoint);
     this.vehicle.phased = false;
     this.vehicle.timer = 0;
     this.vehicle.abilityStop = 190;
@@ -299,7 +300,7 @@ class Delor{
   // }
 }
 class Rocket{
-  constructor(x,y,lap,rotation){
+  constructor(x,y,lap,rotation,checkpoint){
     this.type = Rocket;
     this.facelength = 19;
     this.facewidth = 19;
@@ -313,7 +314,7 @@ class Rocket{
     this.bumper.bounciness = 0;
     everything.push(this.bumper);
     this.lap = lap;
-    this.vehicle = new Car(x,y,lap,this.type,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.recharge,"Rocket","On Cooldown",200);
+    this.vehicle = new Car(x,y,lap,this.type,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.recharge,"Rocket","On Cooldown",200,checkpoint);
     this.front = new GlueJoint(this.bumper,this.vehicle.face);
     this.vehicle.handbrake = false;
     this.vehicle.cooldown = false;
@@ -359,7 +360,7 @@ class Rocket{
 }
 
 class Car{
-  constructor(x,y,lap,type,rotation,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2, backText,topText, abilityTime){
+  constructor(x,y,lap,type,rotation,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2, backText,topText, abilityTime, checkpoint){
     this.body = new Sprite(x*big+backlength/2,y*big);
     this.body.w = backlength;
     this.body.h = backwidth;
@@ -391,7 +392,7 @@ class Car{
 
     this.type = type;
 
-    this.checkpoint = 0;
+    this.checkpoint = checkpoint;
     this.lap = lap;
     this.lapCounter = new Sprite(0,0,60,40);
     this.lapCounter.collider = "none";
