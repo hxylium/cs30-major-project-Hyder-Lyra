@@ -124,7 +124,7 @@ class Bur{
     if (!this.puffed){
       let mid = this.carCenter();
       // console.log(mid);
-      let radius = 18;
+      let radius = 20;
   
       this.pokeys.push(new Spike(mid.x-1*radius,mid.y+0*radius,180,true));
       this.pokeys.push(new Spike(mid.x-0.71*radius,mid.y-0.71*radius,225,true));
@@ -136,8 +136,9 @@ class Bur{
       this.pokeys.push(new Spike(mid.x-0.71*radius,mid.y+0.71*radius,135,true));
 
       for (let spike of this.pokeys){
+        spike.collider = 'dynamic';
         this.bones.push(new GlueJoint(this.face, spike.metal));
-        spike.metal.collider = 'dynamic';
+        
       }
       // this.bones.push(new DistanceJoint(this.face,this.pokeys[0].metal));
       // this.bones.push(new DistanceJoint(this.face,this.pokeys[1].metal));
@@ -683,10 +684,10 @@ class Spike{
     let thang = 6;
     let mode;
     if (puff){
-      mode = 'd';
+      mode = 'dynamic';
     }
     else{
-      mode = 's';
+      mode = 'static';
     }
     this.metal = new Sprite(x*big,y*big, [
       [thing*big, thang*big],
@@ -694,7 +695,7 @@ class Spike{
       [0, -12*big]
     ],mode);
     this.metal.mass = 0;
-    // this.metal.drag = -1;
+    this.metal.drag = -1;
     
     this.metal.rotation = rotation;
     this.metal.layer = 0.2
