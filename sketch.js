@@ -29,7 +29,7 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(700,380,1,0,Swing,0);
+  cheese = makeVehicle(700,380,1,0,Bur,0);
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
   divider1 = new Wall(570,500,900,15,0);
@@ -132,12 +132,21 @@ class Bur{
       this.pokeys.push(new Spike(mid.x+0.71*radius,mid.y-0.71*radius,315,true));
       this.pokeys.push(new Spike(mid.x+1*radius,mid.y+0*radius,0,true));
       this.pokeys.push(new Spike(mid.x+0.71*radius,mid.y+0.71*radius,45,true));
-      this.pokeys.push(new Spike(mid.x+0*radius,mid.y+1*radius,90));
+      this.pokeys.push(new Spike(mid.x+0*radius,mid.y+1*radius,90,true));
       this.pokeys.push(new Spike(mid.x-0.71*radius,mid.y+0.71*radius,135,true));
 
-      for (let spike of this.pokeys){
-        spike.metal.collider = 'dynamic';
-        this.bones.push(new GlueJoint(this.face, spike.metal));
+      for (let number in this.pokeys){
+        let spike= this.pokeys[number];
+        this.bones.push(new DistanceJoint(this.face, spike.metal));
+        this.bones.push(new DistanceJoint(this.body, spike.metal));
+        let thing;
+        if (number < this.pokeys.length-2 && number > 0){
+          thing = this.pokeys[number-1];
+        }
+        else{
+          thing = this.pokeys[0];
+        }
+        this.bones.push(new DistanceJoint(thing.metal, spike.metal))
         
       }
 
