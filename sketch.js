@@ -29,7 +29,7 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(700,380,1,0,Bur,0,"blue","turquoise");
+  cheese = makeVehicle(700,380,1,0,Delor,0,"blue","turquoise");
   camera.pos = cheese.vehicle.face.pos;
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
@@ -97,6 +97,7 @@ function respawn(checkNum,self,lap,type){
   self.vehicle.respawnBar.remove();
   self.vehicle.lapCounter.remove();
   self.vehicle.abilityBar.remove();
+  self.vehicle.speedometer.remove();
   return makeVehicle(point.x,point.y,lap,point.spot.rotation, type,checkNum,colourA,colourB);
 
 }
@@ -107,6 +108,7 @@ function makeVehicle(x,y,lap,rotation,type,checkpoint,colourA,colourB){
   beep.self = beep;
   return beep;
 }
+
 
 class Bur{
   constructor(x,y,lap,rotation,checkpoint,colourA,colourB){
@@ -173,8 +175,6 @@ class Bur{
     }
     // warning system
     if (this.puffed){
-      // this.move = 0;
-
       this.abilityBar.topText = "Spiked!";
       this.abilityBar.progress.color = 'pink';
       this.face.stroke = 'pink';
@@ -570,7 +570,13 @@ class Car{
     this.dead = false;
     
     this.respawnCommit = 0;
-    this.respawnBar = new Bar(300,20,5,10+this.lapCounter.h,"red","R to Respawn", '', respawntime, 0);
+    // Sport's shorter respawn time
+    this.respawnMod = 1;
+    if(this.type === Sport){
+      this.respawnMod = 2;
+    }
+    this.respawnBar = new Bar(300,20,5,10+this.lapCounter.h,"red","R to Respawn", "", respawntime, 0);
+    
 
     this.thing = thing;
     this.thing2 = thing2;
@@ -578,6 +584,8 @@ class Car{
     this.abilityBar = new Bar(300,20,5,10+this.respawnBar.height+this.respawnBar.yOffset, "turquoise", "Press Shift to " + backText, topText,abilityTime,0);
     this.timer = 0;
     this.time = abilityTime;
+
+    this.speedometer = new Bar(270,35,5, 10+this.abilityBar.height+this.abilityBar.yOffset, "yellow", "W = Gas, ' '=Reverse", "",16,0);
 
   }
 
@@ -594,7 +602,6 @@ class Car{
 
   die(){
     this.midsec.remove();
-    this.tod = millis();
     this.dead = true;
   }
   spikeCheck(){
@@ -634,8 +641,21 @@ class Car{
     this.abilityBar.update(this.timer);
     this.abilityBar.display(this.face);
 
-    this.respawnBar.update(this.respawnCommit)
+    this.respawnBar.update(this.respawnCommit);
     this.respawnBar.display(this.face);
+
+    // let avspeed = Math.floor((this.body.speed+this.face.speed)/2*10)/10;
+    let avspeed = Math.abs(Math.floor(this.move*10)/10);
+    this.speedometer.update(avspeed);
+    if(this.move === this.maxspeed){
+      avspeed = avspeed + " @ Max"; 
+      this.speedometer.progress.color = "gold";
+    }
+    else{
+      this.speedometer.progress.color = "yellow";
+    }
+    this.speedometer.progress.text = avspeed;
+    this.speedometer.display(this.face);
   }
 
   drive() {
@@ -703,7 +723,7 @@ class Car{
   }
   respawn(){
     if(keyIsDown(82)){
-      this.respawnCommit += 1;
+      this.respawnCommit += this.respawnMod;
       if(this.respawnCommit >= respawntime){
         this.respawnCommit = 0;
         cheese = respawn(this.checkpoint,cheese,this.lap, this.type);
@@ -721,7 +741,7 @@ class Car{
 
 let big = 1.4;
 class Wall{
-  constructor(x,y,width,height,rotation, spikes){
+  constructor(x,y,width,height,rotation){
     this.cement = new Sprite(x*big,y*big,width*big,height*big);
     this.cement.collider = "static";
     this.cement.rotation = rotation;
@@ -857,13 +877,13 @@ class Bar{
       this.progress.text = this.topText;
     }
     else{
-      this.progress.text = '';
+      this.progress.text = "";
     }
     if(this.progress.w <= 0){
       this.back.text = this.backText;
     }
     else{
-      this.back.text = '';
+      this.back.text = "";
     }
   }
 
