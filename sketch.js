@@ -30,6 +30,7 @@ function setup() {
   ratio = ratio/20;
   
   cheese = makeVehicle(700,380,1,0,Bur,0,"blue","turquoise");
+  camera.pos = cheese.vehicle.face.pos;
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
   divider1 = new Wall(570,500,900,15,0);
@@ -126,6 +127,7 @@ class Bur{
     this.vehicle.bones = [];
 
     this.vehicle.abilityStart = 60;
+    this.vehicle.selfDestruct = 0;
   }
   
   puff(){
@@ -137,7 +139,7 @@ class Bur{
       this.face.stroke = 'yellow';
       this.body.stroke = 'yellow';
     }
-    else if(this.timer < this.time){
+    else if(this.timer < this.time && !this.puffed){
       this.timer ++;
     }
     // make spikes
@@ -165,12 +167,13 @@ class Bur{
         // spike.metal.color = this.body.color;
         spike.metal.color = 'pink';
         this.bones.push(new GlueJoint(this.face,spike.metal));
+        this.bones.push(new DistanceJoint(this.body,spike.metal));
       }
       this.puffed = true;
     }
     // warning system
     if (this.puffed){
-      this.move = 0;
+      // this.move = 0;
 
       this.abilityBar.topText = "Spiked!";
       this.abilityBar.progress.color = 'pink';
@@ -185,8 +188,12 @@ class Bur{
 
       danger = danger/8 -this.face.speed;
 
-      if (danger >= 0.1){
-        this.abilityBar.topText = "WARNING"
+      if (danger >= 1.0){
+        if (this.timer === this.time){
+          this.timer = this.time-151;
+        }
+        this.timer += 2;
+        this.abilityBar.topText = "WARNING";
         this.abilityBar.progress.color = "orange";
 
         this.face.stroke = "orange";
@@ -197,15 +204,34 @@ class Bur{
         }
       }
       
-      if (danger >= 4.5){
-        this.abilityBar.topText = "DANGER"
-        this.abilityBar.progress.color = "red";
+      if (danger >= 10){
+        this.abilityBar.topText = "DANGER";
+        // flashing colours for late in the danger levels
+        let colour = "red";
+        let interval = 9;
+        if (this.timer >=this.time){
+          if (this.timer/interval === Math.floor(this.timer/interval)){
+            if (this.abilityBar.progress.color === "yellow"){
+              colour = "red";
+            }
+            else {
+              colour = "yellow";
 
-        this.face.stroke = "red";
-        this.body.stroke = "red";
+            }
+          }
+        }
+
+        this.abilityBar.progress.color = colour;
+
+        this.face.stroke = colour;
+        this.body.stroke = colour;
 
         for (let spike of this.pokeys){
-          spike.metal.color = "red";
+          spike.metal.color = colour;
+        }
+        this.selfDestruct ++;
+        if (this.selfDestruct >= 100){
+          this.die();
         }
       }
       
@@ -227,7 +253,7 @@ class Bur{
       }
       this.pokeys = [];
       this.bones = [];
-
+      this.selfDestruct = 0;
       this.timer = 0;
       this.puffed = false;
     }
@@ -513,8 +539,11 @@ class Car{
     everything.push(this.face);
     this.midsec = new GlueJoint(this.body,this.face);
 
-    this.body.rotateTo(rotation,22);
-// this.body.rotation = rotation;
+    
+  
+    // this.body.rotateTo(rotation,22);
+
+    // this.body.rotation = rotation;
     this.body.drag = 2;
     this.body.rotationDrag = 3;
     this.body.bounciness = 0.8;
