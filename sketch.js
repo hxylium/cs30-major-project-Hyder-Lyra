@@ -29,7 +29,7 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(700,380,1,0,Delor,0,"blue","turquoise");
+  cheese = makeVehicle(700,380,1,0,Rocket,0,"lightgrey","grey");
   camera.pos = cheese.vehicle.face.pos;
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
@@ -466,17 +466,19 @@ class Rocket{
     this.facewidth = 19;
     this.bodylength = 16;
     this.bodywidth = 19.5;
-    this.bumper = new Sprite(x*big-this.facelength,y*big);
-    this.bumper.w = Math.sqrt((this.facewidth+1)**2/2);
-    this.bumper.h = Math.sqrt((this.facewidth+1)**2/2);
-    this.bumper.rotation = 45;
-    this.bumper.drag = 1;
-    this.bumper.bounciness = 0;
-    this.bumper.color = colourB;
-    everything.push(this.bumper);
     this.lap = lap;
     this.vehicle = new Car(x,y,lap,this.type,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.recharge,"Rocket","On Cooldown",200,checkpoint,colourA,colourB);
-    this.front = new GlueJoint(this.bumper,this.vehicle.face);
+    
+    this.vehicle.bumper = new Sprite(x*big-this.facelength,y*big);
+    this.vehicle.bumper.w = Math.sqrt((this.facewidth+4)**2/2);
+    this.vehicle.bumper.h = Math.sqrt((this.facewidth+4)**2/2);
+    this.vehicle.bumper.rotation = 45;
+    this.vehicle.bumper.drag = 1;
+    this.vehicle.bumper.bounciness = 0;
+    this.vehicle.bumper.color = colourB;
+    everything.push(this.vehicle.bumper);
+    
+    this.front = new GlueJoint(this.vehicle.bumper,this.vehicle.face);
     this.vehicle.handbrake = false;
     this.vehicle.cooldown = false;
   }
@@ -488,6 +490,13 @@ class Rocket{
         this.cooldown = true;
         this.timer = this.time;
         this.body.applyForce(2000);
+        if (this.move < 8){
+          this.move = 8;
+        }
+
+        this.body.stroke = "purple";
+        this.face.stroke = "purple";
+        this.bumper.stroke = "purple";
         
         console.log("rocketed");
       }
@@ -497,6 +506,11 @@ class Rocket{
   recharge(){
     if(this.cooldown){
       this.timer --;
+      if (this.timer <= this.time*2/3){
+        this.body.stroke = "black";
+        this.face.stroke = "black";
+        this.bumper.stroke = "black";
+      }
       if (this.timer <=0){
         this.cooldown = false;
         // console.log("recharged");
@@ -835,6 +849,7 @@ class CheckP{
     this.spot.layer = 0;
     this.spot.rotation = angle;
     this.spot.collider = "none";
+    this.spot.color = 'grey';
     this.number = number;
   }
 }
