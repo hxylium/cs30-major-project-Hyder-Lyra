@@ -29,7 +29,7 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(700,380,1,0,Bur,0);
+  cheese = makeVehicle(700,380,1,0,Bur,0,"blue","turquoise");
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
   divider1 = new Wall(570,500,900,15,0);
@@ -88,43 +88,69 @@ function draw() {
 
 function respawn(checkNum,self,lap,type){
   let point = checkpoints[checkNum];
+  
+  let colourA = self.vehicle.body.color;
+  let colourB = self.vehicle.face.color;
   self.vehicle.body.remove();
   self.vehicle.face.remove();
   self.vehicle.respawnBar.remove();
   self.vehicle.lapCounter.remove();
   self.vehicle.abilityBar.remove();
-  return makeVehicle(point.x,point.y,lap,point.spot.rotation, type,checkNum);
+  return makeVehicle(point.x,point.y,lap,point.spot.rotation, type,checkNum,colourA,colourB);
 
 }
 
-function makeVehicle(x,y,lap,rotation,type,checkpoint){
-  let beep = new type(x,y,lap,rotation,checkpoint);
+function makeVehicle(x,y,lap,rotation,type,checkpoint,colourA,colourB){
+  let beep = new type(x,y,lap,rotation,checkpoint,colourA,colourB);
   beep.vehicle.dead = false;
   beep.self = beep;
   return beep;
 }
 
 class Bur{
-  constructor(x,y,lap,rotation,checkpoint){
+  constructor(x,y,lap,rotation,checkpoint,colourA,colourB){
     this.type = Bur;
     this.facelength = 9;
     this.facewidth = 18;
-    this.bodylength = 9;
+    this.bodylength = 12;
     this.bodywidth = 18;
-    this.vehicle = new Car(x,y,lap,Bur,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 7.5, 9.5, 3, 0.3, this.puff, this.unpuff,"Pufferfish","SPIKE!!",300,checkpoint);
+    this.vehicle = new Car(x,y,lap,Bur,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 7.0, 8.5, 3, 1.0, this.puff, this.unpuff,"Pufferfish","SPIKE!!",300,checkpoint,colourA,colourB);
+
+    this.vehicle.face.drag = 1.5;
+    this.vehicle.body.rotationDrag = 5;
+
 
     this.vehicle.timer = 0;
     this.vehicle.puffed = false;
     this.vehicle.pokeys = [];
     this.vehicle.bones = [];
+
+    this.vehicle.abilityStart = 60;
   }
   
   puff(){
-    this.move = 0;
-    if (!this.puffed){
+    // delay system
+    if (this.timer === 0){
+      this.timer = this.time - this.abilityStart;
+      this.abilityBar.topText = "ready...";
+      this.abilityBar.progress.color = 'yellow';
+      this.face.stroke = 'yellow';
+      this.body.stroke = 'yellow';
+    }
+    else if(this.timer < this.time){
+      this.timer ++;
+    }
+    // make spikes
+    if (!this.puffed && this.timer === this.time && this.timer !== 0){
+
+      this.abilityBar.topText = "Spiked!";
+      this.abilityBar.progress.color = 'pink';
+      this.face.stroke = 'pink';
+      this.body.stroke = 'pink';
+
       let mid = this.carCenter();
       // console.log(mid);
-      let radius = 20;
+      let radius = 21;
   
       this.pokeys.push(new Spike(mid.x-1*radius,mid.y+0*radius,180,true));
       this.pokeys.push(new Spike(mid.x-0.71*radius,mid.y-0.71*radius,225,true));
@@ -134,33 +160,70 @@ class Bur{
       this.pokeys.push(new Spike(mid.x+0.71*radius,mid.y+0.71*radius,45,true));
       this.pokeys.push(new Spike(mid.x+0*radius,mid.y+1*radius,90,true));
       this.pokeys.push(new Spike(mid.x-0.71*radius,mid.y+0.71*radius,135,true));
+      
+      for (let spike of this.pokeys){
+        // spike.metal.color = this.body.color;
+        spike.metal.color = 'pink';
+        this.bones.push(new GlueJoint(this.face,spike.metal));
+      }
+      this.puffed = true;
+    }
+    // warning system
+    if (this.puffed){
+      this.move = 0;
 
-      for (let number in this.pokeys){
-        let spike= this.pokeys[number];
-        this.bones.push(new DistanceJoint(this.face, spike.metal));
-        this.bones.push(new DistanceJoint(this.body, spike.metal));
-        let thing;
-        if (number < this.pokeys.length-2 && number > 0){
-          thing = this.pokeys[number-1];
-        }
-        else{
-          thing = this.pokeys[0];
-        }
-        this.bones.push(new DistanceJoint(thing.metal, spike.metal))
-        
+      this.abilityBar.topText = "Spiked!";
+      this.abilityBar.progress.color = 'pink';
+      this.face.stroke = 'pink';
+      this.body.stroke = 'pink';
+      
+      let danger = 0;
+
+      for (let spike of this.pokeys){
+        danger += spike.metal.speed;
       }
 
-      this.timer = 300;
-      this.puffed = true;
+      danger = danger/8 -this.face.speed;
+
+      if (danger >= 0.1){
+        this.abilityBar.topText = "WARNING"
+        this.abilityBar.progress.color = "orange";
+
+        this.face.stroke = "orange";
+        this.body.stroke = "orange";
+
+        for (let spike of this.pokeys){
+          spike.metal.color = "orange";
+        }
+      }
+      
+      if (danger >= 4.5){
+        this.abilityBar.topText = "DANGER"
+        this.abilityBar.progress.color = "red";
+
+        this.face.stroke = "red";
+        this.body.stroke = "red";
+
+        for (let spike of this.pokeys){
+          spike.metal.color = "red";
+        }
+      }
+      
     }
   }
   unpuff(){
-    if (!keyIsDown(16) && this.puffed || this.dead){
-      for (let spike of this.pokeys){
-        spike.metal.remove();
-      }
-      for (let bone of this.bones){
-        bone.remove();
+    if (!keyIsDown(16) && this.timer > 0 || this.dead){
+
+      this.face.stroke = 'black';
+      this.body.stroke = 'black';
+
+      if (this.puffed){
+        for (let spike of this.pokeys){
+          spike.metal.remove();
+        }
+        for (let bone of this.bones){
+          bone.remove();
+        }
       }
       this.pokeys = [];
       this.bones = [];
@@ -185,13 +248,13 @@ class Bur{
   
 }
 class Swing{
-  constructor(x,y,lap,rotation,checkpoint){
+  constructor(x,y,lap,rotation,checkpoint,colourA,colourB){
     this.type = Swing;
     this.facelength = 18;
     this.facewidth = 15;
     this.bodylength = 18;
     this.bodywidth = 18;
-    this.vehicle = new Car(x,y,lap,Swing,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 7.5, 11.5, 3, 1.4, this.grapple, this.ungrapple,"Grapple","SWINGIN'!!",300,checkpoint);
+    this.vehicle = new Car(x,y,lap,Swing,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 7.5, 11.5, 3, 1.4, this.grapple, this.ungrapple,"Grapple","SWINGIN'!!",300,checkpoint,colourA,colourB);
 
     this.vehicle.timer = 0;
     this.vehicle.grappled = false;
@@ -238,7 +301,7 @@ class Swing{
   
 }
 class Sport{
-  constructor(x,y,lap,rotation,checkpoint){
+  constructor(x,y,lap,rotation,checkpoint,colourA,colourB){
     this.type = Sport;
     this.facelength = 15;
     this.facewidth = 19;
@@ -248,8 +311,9 @@ class Sport{
     this.bumper.d = this.facewidth;
     this.bumper.drag = 2.5;
     this.bumper.bounciness = 0.8;
+    this.bumper.color = colourB;
     everything.push(this.bumper);
-    this.vehicle = new Car(x,y,lap,Sport,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 16, 3, 2.5, this.hbrake, this.unhbrake, "Handbrake","HANDBRAKE!!",300,checkpoint);
+    this.vehicle = new Car(x,y,lap,Sport,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 16, 3, 2.5, this.hbrake, this.unhbrake, "Handbrake","HANDBRAKE!!",300,checkpoint,colourA,colourB);
     this.front = new GlueJoint(this.bumper,this.vehicle.face);
 
     this.vehicle.handbrake = false;
@@ -284,7 +348,7 @@ class Sport{
   }
 }
 class Delor{
-  constructor(x,y,lap,rotation,checkpoint){
+  constructor(x,y,lap,rotation,checkpoint,colourA,colourB){
     this.type = Delor;
     this.facelength = 15;
     this.facewidth = 19;
@@ -292,7 +356,7 @@ class Delor{
     this.bodywidth = 20;
     // this.bumper = new Sprite(x+this.facelength,y);
     // this.bumper.d = this.facewidth;
-    this.vehicle = new Car(x,y,lap,Delor,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11.5, 4.5, 2.3, this.blink, this.recharge, "Blink", "On Cooldown",350,checkpoint);
+    this.vehicle = new Car(x,y,lap,Delor,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11.5, 4.5, 2.3, this.blink, this.recharge, "Blink", "On Cooldown",350,checkpoint,colourA,colourB);
     this.vehicle.phased = false;
     this.vehicle.timer = 0;
     this.vehicle.abilityStop = 190;
@@ -370,7 +434,7 @@ class Delor{
   // }
 }
 class Rocket{
-  constructor(x,y,lap,rotation,checkpoint){
+  constructor(x,y,lap,rotation,checkpoint,colourA,colourB){
     this.type = Rocket;
     this.facelength = 19;
     this.facewidth = 19;
@@ -382,9 +446,10 @@ class Rocket{
     this.bumper.rotation = 45;
     this.bumper.drag = 1;
     this.bumper.bounciness = 0;
+    this.bumper.color = colourB;
     everything.push(this.bumper);
     this.lap = lap;
-    this.vehicle = new Car(x,y,lap,this.type,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.recharge,"Rocket","On Cooldown",200,checkpoint);
+    this.vehicle = new Car(x,y,lap,this.type,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.recharge,"Rocket","On Cooldown",200,checkpoint,colourA,colourB);
     this.front = new GlueJoint(this.bumper,this.vehicle.face);
     this.vehicle.handbrake = false;
     this.vehicle.cooldown = false;
@@ -431,15 +496,19 @@ class Rocket{
 }
 
 class Car{
-  constructor(x,y,lap,type,rotation,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2, backText,topText, abilityTime, checkpoint){
+  constructor(x,y,lap,type,rotation,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2, backText,topText, abilityTime, checkpoint, colourA, colourB){
     this.body = new Sprite(x*big+backlength/2,y*big);
     this.body.w = backlength;
     this.body.h = backwidth;
+
+    this.body.color = colourA;
     
     everything.push(this.body);
     this.face = new Sprite(x*big-facelength/2,y*big);
     this.face.w = facelength;
     this.face.h = facewidth;
+
+    this.face.color = colourB;
     
     everything.push(this.face);
     this.midsec = new GlueJoint(this.body,this.face);
