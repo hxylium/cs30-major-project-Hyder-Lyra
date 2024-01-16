@@ -25,11 +25,12 @@ let checkpoints = [];
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  // noStroke()
+  
+  stroke = 6;
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(700,380,1,0,Rocket,0,"lightgrey","grey");
+  cheese = makeVehicle(700,380,1,0,Sport,0,"magenta","darkgrey");
   camera.pos = cheese.vehicle.face.pos;
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
@@ -330,7 +331,7 @@ class Sport{
   constructor(x,y,lap,rotation,checkpoint,colourA,colourB){
     this.type = Sport;
     this.facelength = 15;
-    this.facewidth = 19;
+    this.facewidth = 19.5;
     this.bodylength = 16;
     this.bodywidth = 20;
     this.bumper = new Sprite(x*big-this.facelength,y*big);
@@ -339,7 +340,7 @@ class Sport{
     this.bumper.bounciness = 0.8;
     this.bumper.color = colourB;
     everything.push(this.bumper);
-    this.vehicle = new Car(x,y,lap,Sport,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 16, 3, 2.5, this.hbrake, this.unhbrake, "Handbrake","HANDBRAKE!!",300,checkpoint,colourA,colourB);
+    this.vehicle = new Car(x,y,lap,Sport,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 16, 0.5, 2.5, this.hbrake, this.unhbrake, "Handbrake","HANDBRAKE!!",300,checkpoint,colourA,colourB);
     this.front = new GlueJoint(this.bumper,this.vehicle.face);
 
     this.vehicle.handbrake = false;
@@ -661,11 +662,17 @@ class Car{
     // let avspeed = Math.floor((this.body.speed+this.face.speed)/2*10)/10;
     let avspeed = Math.abs(Math.floor(this.move*10)/10);
     this.speedometer.update(avspeed);
-    if(this.move === this.maxspeed){
-      avspeed = avspeed + " @ Max"; 
-      this.speedometer.progress.color = "gold";
+    if(avspeed >= 1){
+      if(this.move === this.maxspeed){
+        avspeed = avspeed + " @ Max"; 
+        this.speedometer.progress.color = "gold";
+      }
+      else{
+        this.speedometer.progress.color = "yellow";
+      }
     }
     else{
+      avspeed = "";
       this.speedometer.progress.color = "yellow";
     }
     this.speedometer.progress.text = avspeed;
