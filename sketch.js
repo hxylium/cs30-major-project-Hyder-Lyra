@@ -30,7 +30,7 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(700,380,1,0,Sport,0,"magenta","darkgrey");
+  cheese = makeVehicle(700,380,1,0,Bubble,0,"magenta","darkgrey");
   camera.pos = cheese.vehicle.face.pos;
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
@@ -147,15 +147,13 @@ class Bubble{
       this.shield.bounciness = 10;
       this.shield.layer = 0.5;
       this.shield.drag = 0;
-      this.shield.overlaps(this.face);
-      this.shield.overlaps(this.body);
+
       this.shield.colour = "lightblue";
       this.shield.stroke = "turquoise";
       this.handle = new GlueJoint(this.shield, this.body);
 
       this.face.drag = 0;
       this.body.drag = 0;
-
     }
   }
   unblock(){
@@ -192,12 +190,20 @@ class Bubble{
 
         this.face.drag = 2.5;
         this.body.drag = 2;
+
+        this.face.collider ="d";
+        this.body.collider ="d";
       }
       else if (this.timer <= 120 && this.shield.radius){
         this.shield.radius --;
       }
       else if(this.shield.radius < 31){
         this.shield.radius ++;
+      }
+      else{
+        // grant complete immunity from spikes after shields are fully up
+        this.face.collider ="none";
+        this.body.collider ="none";
       }
       
         
@@ -735,7 +741,7 @@ class Car{
     this.timer = 0;
     this.time = abilityTime;
 
-    this.speedometer = new Bar(270,35,5, 10+this.abilityBar.height+this.abilityBar.yOffset, "yellow", "W = Gas, ' '=Reverse", "",16,0);
+    this.speedometer = new Bar(270,35,5, 20+this.abilityBar.height+this.abilityBar.yOffset, "yellow", "W = Gas, ' '=Reverse", "",16,0);
 
   }
 
