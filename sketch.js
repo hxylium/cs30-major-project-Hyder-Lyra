@@ -30,7 +30,7 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(700,380,1,0,Delor,0,"magenta","darkgrey");
+  cheese = makeVehicle(700,380,1,0,Bur,0,"magenta","darkgrey");
   camera.pos = cheese.vehicle.face.pos;
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
@@ -81,6 +81,7 @@ function setup() {
 
 function draw() {
   clear();
+  background("lightgrey")
   
   cheese.docar();
 
@@ -91,8 +92,8 @@ function draw() {
 function respawn(checkNum,self,lap,type){
   let point = checkpoints[checkNum];
   
-  let colourA = self.vehicle.body.color;
-  let colourB = self.vehicle.face.color;
+  let colourA = self.vehicle.colourA;
+  let colourB = self.vehicle.colourB;
   self.vehicle.body.remove();
   self.vehicle.face.remove();
   self.vehicle.respawnBar.remove();
@@ -207,6 +208,7 @@ class Bubble{
       this.vehicle.drive();
     }
     this.vehicle.specialCleanup();
+    this.vehicle.rip();
   }
   
 }
@@ -369,6 +371,7 @@ class Bur{
       this.vehicle.drive();
     }
     this.vehicle.specialCleanup();
+    this.vehicle.rip();
   }
   
 }
@@ -394,6 +397,9 @@ class Swing{
       // }
       this.towlineA = new DistanceJoint(this.face,this.hook);
       this.towlineB = new DistanceJoint(this.body,this.hook);
+      
+      this.face.stroke = "lime";
+      this.body.stroke = "lime";
 
       // this.towlineA.springiness = 1;
       // this.towlineB.springiness = 1;
@@ -408,6 +414,8 @@ class Swing{
       this.towlineB.remove();
       this.timer = 0;
       this.grappled = false;
+      this.face.stroke = "black";
+      this.body.stroke = "black";
     }
     
   }
@@ -426,6 +434,7 @@ class Swing{
       this.vehicle.drive();
     }
     this.vehicle.specialCleanup();
+    this.vehicle.rip();
   }
   
 }
@@ -436,14 +445,16 @@ class Sport{
     this.facewidth = 19.5;
     this.bodylength = 16;
     this.bodywidth = 20;
-    this.bumper = new Sprite(x*big-this.facelength,y*big);
-    this.bumper.d = this.facewidth;
-    this.bumper.drag = 2.5;
-    this.bumper.bounciness = 0.8;
-    this.bumper.color = colourB;
-    everything.push(this.bumper);
     this.vehicle = new Car(x,y,lap,Sport,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 16, 0.5, 2.5, this.hbrake, this.unhbrake, "Handbrake","HANDBRAKE!!",300,checkpoint,colourA,colourB);
-    this.front = new GlueJoint(this.bumper,this.vehicle.face);
+    this.vehicle.bumper = new Sprite(x*big-this.facelength,y*big);
+    this.vehicle.bumper.d = this.facewidth;
+    this.vehicle.bumper.drag = 2.5;
+    this.vehicle.bumper.bounciness = 0.8;
+    this.vehicle.bumper.color = colourB;
+    this.vehicle.bumper.layer = 0.5
+    everything.push(this.vehicle.bumper);
+
+    this.front = new GlueJoint(this.vehicle.bumper,this.vehicle.face);
 
     this.vehicle.handbrake = false;
     this.vehicle.timer = 0;
@@ -456,24 +467,36 @@ class Sport{
       this.move -= toZero(this.move);
     }
     this.body.speed -= toZero(this.body.speed)*10**-1;
+
+    this.face.stroke = "brown";
+    this.body.stroke = "brown";
+    this.bumper.stroke = "brown";
     
     // console.log("handbrake");
   }
   unhbrake(){
     if (!keyIsDown(16)){
       this.timer = 0;
+      this.face.stroke = "black";
+      this.body.stroke = "black";
+      this.bumper.stroke = "black";
     }
     this.handbrake = false;
   }
   docar(){
     this.vehicle.spawnCheck();
     this.vehicle.spikeCheck();
-    this.vehicle.respawn([this.bumper,this.front]);
+    this.vehicle.respawn([this.vehicle.bumper,this.front]);
     this.vehicle.displayUI();
     if (!this.vehicle.dead){
       this.vehicle.drive();
     }
     this.vehicle.specialCleanup();
+    this.vehicle.rip();
+    if (this.vehicle.dead){
+      this.bumper.color = "black";
+      this.bumper.stroke = "darkgrey";
+    }
   }
 }
 class Delor{
@@ -560,6 +583,7 @@ class Delor{
       this.vehicle.drive();
     }
     this.vehicle.specialCleanup();
+    this.vehicle.rip();
   }
 
   // display(playerTrue){
@@ -633,12 +657,12 @@ class Rocket{
       this.vehicle.drive();
     }
     this.vehicle.specialCleanup();
+    this.vehicle.rip();
+    if (this.vehicle.dead){
+      this.bumper.color = "black";
+      this.bumper.stroke = "darkgrey";
+    }
   }
-  
-  
-  // deathTimer(start,num){
-  //   while()
-  // }
 
 }
 
@@ -660,6 +684,8 @@ class Car{
     everything.push(this.face);
     this.midsec = new GlueJoint(this.body,this.face);
 
+    this.colourA = colourA;
+    this.colourB = colourB;
     
   
     // this.body.rotateTo(rotation,22);
@@ -724,6 +750,15 @@ class Car{
   die(){
     this.midsec.remove();
     this.dead = true;
+  }
+  rip(){
+    if (this.dead){
+      this.face.color = "black";
+      this.body.color = "black";
+      this.face.stroke = "darkgrey";
+      this.body.stroke = "darkgrey";
+      
+    }
   }
   spikeCheck(){
     for (let part of [this.body,this.face]){
