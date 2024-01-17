@@ -11,11 +11,6 @@ let laps = 3;
 
 let finsished = [];
 
-// map
-let divider1,divider2,divider3,divider4,eastwall1,westwall1,eastwall2,westwall2,eastwall3;
-let south1, south2, south3, south4, south5, south6;
-let dwall1,dwall2;
-
 
 let respawntime = 150;
 
@@ -25,56 +20,11 @@ let checkpoints = [];
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  
-  stroke = 100;
-  ratio = smallest();
-  ratio = ratio/20;
-  
-  cheese = makeVehicle(700,380,1,0,Bubble,0,"magenta","darkgrey");
-  camera.pos = cheese.vehicle.face.pos;
   // dummy = new Delor(width/3, height/3);
-  dwall2 = new SpWall(805,500,14);
-  divider1 = new Wall(570,500,900,15,0);
   
-
-  dwall1 = new SpWall(185,95,59); 
-  divider2 = new Wall(580,90,800,25,0,true);
-  
-
-  divider3 = new Wall(600,260,750,15,0);
-  
-
-  eastwall1 = new Bend(150,224,12,11,0, -1,true);
-  eastwall2 = new Bend(150,225,12,11, -11, -1);
-
-  westwall1 = new Bend(780,328,20,10.5, 0, 1,true);
-  westwall2 = new Bend(780,328,20,10, 17, 1);
-
-  eastwall3 = new Bend(720,369,14,10,1,1);
-
-  
-  south1 = new Bend(980,760,23,7,-9,-1);
-
-  south3 = new Bend(735, 335, 12.4, 9, 22,1);
-
-  south2 = new Bend(670, 640, 14, 11, 20, 1);
-
-  south4 = new Bend(675, 700, 10, 9, -20, -1);
-
-  south5 = new Bend(1008,720,12,8,-7,-1);
-  
-  
-  divider4 = new Wall(760, 820, 15, 300,0);
-
-  south6 = new Bend(703,515,12,10,-15, 1, true);
-
-  // finish/start 
-  makecheckP(700,380, 0, checkpoints, 215);
-
-  makecheckP(110,270, 180, checkpoints,100);
-  makecheckP(850, 180, -90, checkpoints, 65);
-  makecheckP(990, 981, 0, checkpoints, 150);
-  
+  makeTrack("BnF");
+  cheese = makeVehicle(checkpoints[0].x,checkpoints[0].y,1,0,Bubble,0,"magenta","darkgrey");
+  camera.pos = cheese.vehicle.face.pos;
   
 }
 
@@ -206,7 +156,7 @@ class Bubble{
 
   docar(){
     this.vehicle.spawnCheck();
-    if (!this.vehicle.shielded || this.vehicle.shield.radius === 31){
+    if (!this.vehicle.shielded || this.vehicle.shield.radius < 31){
       this.vehicle.spikeCheck();
     }
     let list = [];
@@ -600,7 +550,7 @@ class Rocket{
     this.bodylength = 16;
     this.bodywidth = 19.5;
     this.lap = lap;
-    this.vehicle = new Car(x,y,lap,this.type,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.recharge,"Rocket","On Cooldown",200,checkpoint,colourA,colourB,"purple");
+    this.vehicle = new Car(x,y,lap,this.type,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.recharge,"Rocket","On Cooldown",200,checkpoint,colourA,colourB,"violet");
     
     this.vehicle.bumper = new Sprite(x*big-this.facelength,y*big);
     this.vehicle.bumper.w = Math.sqrt((this.facewidth+4)**2/2);
@@ -661,8 +611,8 @@ class Rocket{
     this.vehicle.specialCleanup();
     this.vehicle.rip();
     if (this.vehicle.dead){
-      this.bumper.color = "black";
-      this.bumper.stroke = "darkgrey";
+      this.vehicle.bumper.color = "black";
+      this.vehicle.bumper.stroke = "darkgrey";
     }
   }
 
@@ -920,11 +870,16 @@ class Wall{
   }
 }
 class SpWall{
-  constructor(x,y,amount){
+  constructor(x,y,amount,rotation,orientation){
     for (let i = 0; i <= amount; i++){
       let shift = i*10*big;
-      let death = new Spike(x+shift,y,0);
-      death.metal.rotation = 90;
+      let death;
+      if(orientation === "vert"){
+        death = new Spike(x,y+shift,rotation);
+      }
+      else{
+        death = new Spike(x+shift,y,rotation);
+      }
     }
   }
 }
@@ -1078,4 +1033,84 @@ function smallest(){
     smoll = windowWidth/tall;
   }
   return smoll;
+}
+
+
+function makeTrack(id){
+  if (id === "BnF"){
+    let wall1,wall2,wall3,wall4;
+    let barrier1,barrier2,barrier3,barrier4;
+    let die1,die2,die3;
+
+    big = 2.2;
+
+    wall1 = new Wall(500,200,1500,20,0);
+    wall2 = new Wall(500,500,1500,20,0);
+    wall3 = new Wall(-250,350,20,300,0);
+    wall4 = new Wall(1250,350,20,300,0);
+
+    barrier1 = new Wall(500,260,15,100,0);
+    barrier2 = new Wall(225,385,15,130,0);
+    barrier3 = new Wall(150,240,15,200,65);
+    barrier4 = new Wall(850,360,15,200,50)
+
+    die1 = new SpWall(300,490,15,270,"hor");
+    die2 = new SpWall(230,330,5,0,"vert");
+    die3 = new SpWall(600,207,20,90,"hor");
+
+
+    makecheckP(1100,350, 0, checkpoints, 270);
+    makecheckP(-120,350, 180,checkpoints, 270/2);
+
+
+  }
+  if (id === "Intestine"){
+    // map
+    let divider1,divider2,divider3,divider4,eastwall1,westwall1,eastwall2,westwall2,eastwall3;
+    let south1, south2, south3, south4, south5, south6;
+    let dwall1,dwall2;
+
+    dwall2 = new SpWall(805,500,14,90);
+    divider1 = new Wall(570,500,900,15,0);
+  
+
+    dwall1 = new SpWall(185,95,59,90); 
+    divider2 = new Wall(580,90,800,25,0,true);
+  
+
+    divider3 = new Wall(600,260,750,15,0);
+  
+
+    eastwall1 = new Bend(150,224,12,11,0, -1,true);
+    eastwall2 = new Bend(150,225,12,11, -11, -1);
+
+    westwall1 = new Bend(780,328,20,10.5, 0, 1,true);
+    westwall2 = new Bend(780,328,20,10, 17, 1);
+
+    eastwall3 = new Bend(720,369,14,10,1,1);
+
+  
+    south1 = new Bend(980,760,23,7,-9,-1);
+
+    south3 = new Bend(735, 335, 12.4, 9, 22,1);
+
+    south2 = new Bend(670, 640, 14, 11, 20, 1);
+
+    south4 = new Bend(675, 700, 10, 9, -20, -1);
+
+    south5 = new Bend(1008,720,12,8,-7,-1);
+  
+  
+    divider4 = new Wall(760, 820, 15, 300,0);
+
+    south6 = new Bend(703,515,12,10,-15, 1, true);
+
+    // finish/start 
+    makecheckP(700,380, 0, checkpoints, 215);
+
+    makecheckP(110,270, 180, checkpoints,100);
+    makecheckP(850, 180, -90, checkpoints, 65);
+    makecheckP(990, 981, 0, checkpoints, 150);
+  }
+  
 }
