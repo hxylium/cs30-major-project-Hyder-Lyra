@@ -144,9 +144,10 @@ class Bubble{
       let mid = this.carCenter();
       // console.log(mid);
       this.shield = new Sprite(mid.x*big, mid.y*big, 10);
-      this.shield.bounciness = 10;
+      this.shield.bounciness = 5;
       this.shield.layer = 0.5;
       this.shield.drag = 0;
+      this.shield.rotationDrag = 1;
 
       this.shield.colour = "lightblue";
       this.shield.stroke = "turquoise";
@@ -166,17 +167,15 @@ class Bubble{
         // }
       }
       else if(this.shielded){
-        if(toZero(this.move) === 1){
-          if(this.move < 3){
-            this.move = 3;
-          }
+        if(this.move < 3 && toZero(this.move) === 1){
+          
+          this.move = 3;
+          
         }
-        else{
-          if (this.move > -1.6){
+        else if (this.move > -1.6 && toZero(this.move) === -1){
             this.move = -1.6
           }
         }
-      }
 
       if(this.timer <= 0){
         this.shielded = false;
@@ -199,15 +198,7 @@ class Bubble{
       }
       else if(this.shield.radius < 31){
         this.shield.radius ++;
-      }
-      else{
-        // grant complete immunity from spikes after shields are fully up
-        this.face.collider ="none";
-        this.body.collider ="none";
-      }
-      
-        
-      
+      }       
     }
     
   }
@@ -215,7 +206,9 @@ class Bubble{
 
   docar(){
     this.vehicle.spawnCheck();
-    this.vehicle.spikeCheck();
+    if (!this.vehicle.shielded || this.vehicle.shield.radius === 31){
+      this.vehicle.spikeCheck();
+    }
     let list = [];
     if (this.vehicle.shielded){
       list = [this.vehicle.shield,this.vehicle.handle];
