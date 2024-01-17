@@ -1,12 +1,6 @@
 
-let shared, my, guests;
 
-function preload() {
-  partyConnect("wss://demoserver.p5party.org", "drifting_game");
-  shared = partyLoadShared("shared", { players: []});
-  my = partyLoadMyShared();
-  guests = partyLoadGuestShareds();
-}
+
 
 let cheese;
 let dummy;
@@ -17,16 +11,13 @@ let laps = 3;
 
 let finsished = [];
 
-
+// map
 let divider1,divider2,divider3,divider4,eastwall1,westwall1,eastwall2,westwall2,eastwall3;
-
 let south1, south2, south3, south4, south5, south6;
-
 let dwall1,dwall2;
 
-let cap;
-let death;
-let respawntime = 200;
+
+let respawntime = 150;
 
 
 let checkpoints = [];
@@ -34,11 +25,13 @@ let checkpoints = [];
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  // noStroke()
+  
+  stroke = 100;
   ratio = smallest();
   ratio = ratio/20;
   
-  my.cheese = makeVehicle(1000,870,1,0,Rocket);
+  cheese = makeVehicle(700,380,1,0,Bubble,0,"magenta","darkgrey");
+  camera.pos = cheese.vehicle.face.pos;
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
   divider1 = new Wall(570,500,900,15,0);
@@ -87,180 +80,438 @@ function setup() {
 
 
 function draw() {
+  createCanvas(windowWidth, windowHeight);
   clear();
+  background("lightgrey")
   
-  // Update and draw all players
-  for (let player of shared.players) {
-    player.docar();
-  }
-  
-  // Update and draw local player
-  my.cheese.docar();
-  
-  if(keyIsDown(82)){
-    // Restart the game
-    resetGame();
-  }
+  cheese.docar();
+
+  camera.pos = cheese.vehicle.face.pos;
 }
-
-function resetGame() {
-  // Reset player positions and other game variables
-  shared.players = [];
-  my.cheese = makeVehicle(1000,870,1,0,Rocket);
-  // Reset any other game state variables here
-}
-
-    my.cheese.vehicle.respawnCommit += 1;
-    if(my.cheese.vehicle.respawnCommit >= respawntime){
-      my.cheese.vehicle.respawnCommit = 0;
-      my.cheese = respawn(my.cheese.vehicle.checkpoint, my.cheese, my.cheese.type);
-      checkPFix(checkpoints);
-    }
-
-  
-  // Send local player data to other players
-  partySend(my);
-  
-  // Receive and update other players' data
-  for (let guest of guests) {
-    let guestData = partyLoadGuestShared(guest);
-    if (guestData) {
-      shared.players[guest] = guestData;
-    }
-  }
-  
-  // Remove disconnected players
-  for (let player in shared.players) {
-    if (!guests.includes(player)) {
-      delete shared.players[player];
-    }
-  }
-  
-  // Update shared data
-  partySaveShared(shared);
-  camera.pos = my.cheese.vehicle.face.pos;
-
-
-// TowT related things
-
-let balls = {
-  list: [],
-  count: 0,
-};
 
 
 function respawn(checkNum,self,lap,type){
-  // console.log(self);
-  console.log(type);
+  let point = checkpoints[checkNum];
+  
+  let colourA = self.vehicle.colourA;
+  let colourB = self.vehicle.colourB;
   self.vehicle.body.remove();
   self.vehicle.face.remove();
-  // self.bumper.remove();
-  // self = null;
-  let point = checkpoints[checkNum];
-  // self.vehicle.dead = false;
-  return makeVehicle(point.x,point.y,lap,point.spot.rotation, type);
-  // self.vehicle.dead = false;
+  self.vehicle.respawnBar.remove();
+  self.vehicle.lapCounter.remove();
+  self.vehicle.abilityBar.remove();
+  self.vehicle.speedometer.remove();
+  return makeVehicle(point.x,point.y,lap,point.spot.rotation, type,checkNum,colourA,colourB);
+
 }
 
-function makeVehicle(x,y,lap,rotation,type){
-  console.log(type);
-  let beep = new type(x,y,lap,rotation);
+function makeVehicle(x,y,lap,rotation,type,checkpoint,colourA,colourB){
+  let beep = new type(x,y,lap,rotation,checkpoint,colourA,colourB);
   beep.vehicle.dead = false;
-  // beep.vehicle.spawnFix();
   beep.self = beep;
   return beep;
 }
-class TowT{
-  constructor(x,y,rotation){
-    this.type = TowT;
-    this.facelength = 12;
-    this.facewidth = 20;
-    this.bodylength = 20;
-    this.bodywidth = 16;
-    this.vehicle = new Car(x,y,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 8.5, 11.5, 2, 1.7, this.handbrake, this.unhandbrake);
-    this.arm = new Sprite(x*big+this.bodylength+this.facelength*4/9,y*big);
-    this.vehicle.face.drag = 1.2;
-    this.arm.w = this.facelength/3;
-    this.arm.h = 1;
-    this.arm.darg = 2;
-    everything.push(this.arm);
-    this.armbase = new GlueJoint(this.arm,this.vehicle.body);
-    this.object = new Sprite(x*big+this.bodylength+this.arm.w*2,y*big);
-    this.object.radius = this.facelength/4;
-    this.object.drag = 1.5;
-    this.object.bounciness = 1;
-    // this.object.smallest = this.facelength/7;
-    // this.object.overlaps(this.vehicle.body);
-    // this.object.overlaps(this.vehicle.face);
-    balls.list.push(this.object);
-    everything.push(this.object);
-    this.vehicle.id = balls.count;
-    balls.count +=1;
-    this.towline = new DistanceJoint(this.arm,this.object);
-    this.towline.offsetA.x = 1*this.arm.w/2;
-    this.towline.springiness = 0.6;
+
+class Bubble{
+  constructor(x,y,lap,rotation,checkpoint,colourA,colourB){
+    this.type = Bubble;
+    this.facelength = 13;
+    this.facewidth = 18;
+    this.bodylength = 18;
+    this.bodywidth = 21;
+    this.vehicle = new Car(x,y,lap,Bubble,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 8.0, 10.5, 3, 1.0, this.block, this.unblock,"Shield","Protec!",400,checkpoint,colourA,colourB,"turquoise");
+
+    
+    this.vehicle.body.rotationDrag = 5;
+
+
+    this.vehicle.timer = 0;
+    this.vehicle.shielded = false;
+
+    this.vehicle.abilityStart = 60;
+    this.vehicle.selfDestruct = 0;
   }
-  handbrake(){
-    // handbrake
-    for (let i = 0; i < 20; i++){
-      this.move -= toZero(this.move);
+  
+  block(){
+    // make shield
+    if (!this.shielded && this.timer <= 0){
+
+      this.timer = this.time;
+      this.face.stroke = 'turquoise';
+      this.body.stroke = 'turquoise';
+      this.shielded = true;
+
+      let mid = this.carCenter();
+      // console.log(mid);
+      this.shield = new Sprite(mid.x*big, mid.y*big, 10);
+      this.shield.bounciness = 5;
+      this.shield.layer = 0.5;
+      this.shield.drag = 0;
+      this.shield.rotationDrag = 1;
+
+      this.shield.colour = "lightblue";
+      this.shield.stroke = "turquoise";
+      this.handle = new GlueJoint(this.shield, this.body);
+
+      this.face.drag = 0;
+      this.body.drag = 0;
     }
-    this.body.speed -= toZero(this.body.speed)*10**-1;
-    console.log("handbrake");
   }
-  unhandbrake(){
-    if(this.hanbrake === true){
-      this.handbrake = false;
+  unblock(){
+    if (this.shielded){
+      this.timer --;
+      if(this.timer >120 && this.timer < this.time-50){
+        this.move = 0;
+        // if (this.timer === 120){
+        //   this.move = 3;
+        // }
+      }
+      else if(this.shielded){
+        if(this.move < 3 && toZero(this.move) === 1){
+          
+          this.move = 3;
+          
+        }
+        else if (this.move > -1.6 && toZero(this.move) === -1){
+            this.move = -1.6
+          }
+        }
+
+      if(this.timer <= 0){
+        this.shielded = false;
+      }
+      else if (this.timer <= 100 || this.dead){
+        this.face.stroke = 'black';
+        this.body.stroke = 'black';
+
+        this.shield.remove();
+        this.handle.remove();
+
+        this.face.drag = 2.5;
+        this.body.drag = 2;
+
+        this.face.collider ="d";
+        this.body.collider ="d";
+      }
+      else if (this.timer <= 120 && this.shield.radius){
+        this.shield.radius --;
+      }
+      else if(this.shield.radius < 31){
+        this.shield.radius ++;
+      }       
     }
+    
   }
+
+
   docar(){
     this.vehicle.spawnCheck();
-    this.vehicle.spikeCheck();
+    if (!this.vehicle.shielded || this.vehicle.shield.radius === 31){
+      this.vehicle.spikeCheck();
+    }
+    let list = [];
+    if (this.vehicle.shielded){
+      list = [this.vehicle.shield,this.vehicle.handle];
+    }
+    this.vehicle.respawn(list);
+    this.vehicle.displayUI();
     if (!this.vehicle.dead){
       this.vehicle.drive();
     }
+    this.vehicle.specialCleanup();
+    this.vehicle.rip();
+  }
+  
+}
+class Bur{
+  constructor(x,y,lap,rotation,checkpoint,colourA,colourB){
+    this.type = Bur;
+    this.facelength = 9;
+    this.facewidth = 18;
+    this.bodylength = 12;
+    this.bodywidth = 18;
+    this.vehicle = new Car(x,y,lap,Bur,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 7.0, 8.5, 3, 1.0, this.puff, this.unpuff,"Pufferfish","SPIKE!!",300,checkpoint,colourA,colourB,"pink");
+    this.vehicle.face.mass = 0.5;
+    this.vehicle.body.mass = 0.5;
+    this.vehicle.face.drag = 1.5;
+    this.vehicle.body.rotationDrag = 5;
+
+
+    this.vehicle.timer = 0;
+    this.vehicle.puffed = false;
+    this.vehicle.pokeys = [];
+
+    this.vehicle.abilityStart = 60;
+    this.vehicle.selfDestruct = 0;
+  }
+  
+  puff(){
+    // delay system
+    if (this.timer === 0){
+      this.timer = this.time - this.abilityStart;
+      this.abilityBar.topText = "ready...";
+      this.abilityBar.progress.color = 'yellow';
+      this.face.stroke = 'yellow';
+      this.body.stroke = 'yellow';
+    }
+    else if(this.timer < this.time && !this.puffed){
+      this.timer ++;
+    }
+    // make spikes
+    if (!this.puffed && this.timer === this.time && this.timer !== 0){
+
+      this.abilityBar.topText = "Spiked!";
+      this.abilityBar.progress.color = 'pink';
+      this.face.stroke = 'pink';
+      this.body.stroke = 'pink';
+
+      let mid = this.carCenter();
+      // console.log(mid);
+      let radius = 21;
+  
+      this.pokeys.push(new Spike(mid.x-1*radius,mid.y+0*radius,180,true).metal);
+      this.pokeys.push(new Spike(mid.x-0.71*radius,mid.y-0.71*radius,225,true).metal);
+      this.pokeys.push(new Spike(mid.x+0*radius,mid.y-1*radius,270,true).metal);
+      this.pokeys.push(new Spike(mid.x+0.71*radius,mid.y-0.71*radius,315,true).metal);
+      this.pokeys.push(new Spike(mid.x+1*radius,mid.y+0*radius,0,true).metal);
+      this.pokeys.push(new Spike(mid.x+0.71*radius,mid.y+0.71*radius,45,true).metal);
+      this.pokeys.push(new Spike(mid.x+0*radius,mid.y+1*radius,90,true).metal);
+      this.pokeys.push(new Spike(mid.x-0.71*radius,mid.y+0.71*radius,135,true).metal);
+      let bones = []
+      for (let spike of this.pokeys){
+        // spike.metal.color = this.body.color;
+        spike.color = 'pink';
+        bones.push(new GlueJoint(this.face,spike));
+        bones.push(new DistanceJoint(this.body,spike));
+      }
+      for (let item of bones){
+        this.pokeys.push(item);
+      }
+      this.puffed = true;
+    }
+    // warning system
+    if (this.puffed){
+      this.abilityBar.topText = "Spiked!";
+      this.abilityBar.progress.color = 'pink';
+      this.face.stroke = 'pink';
+      this.body.stroke = 'pink';
+      
+      let danger = 0;
+
+      for (let spike of this.pokeys){
+        danger += spike.speed;
+      }
+
+      danger = danger/8 -this.face.speed;
+
+      if (danger >= 1.0){
+        if (this.timer === this.time){
+          this.timer = this.time-151;
+        }
+        this.timer += 2;
+        this.abilityBar.topText = "WARNING";
+        this.abilityBar.progress.color = "orange";
+
+        this.face.stroke = "orange";
+        this.body.stroke = "orange";
+
+        for (let spike of this.pokeys){
+          spike.color = "orange";
+        }
+      }
+      
+      if (danger >= 10){
+        this.abilityBar.topText = "DANGER";
+        // flashing colours for late in the danger levels
+        let colour = "red";
+        let interval = 9;
+        if (this.timer >=this.time){
+          if (this.timer/interval === Math.floor(this.timer/interval)){
+            if (this.abilityBar.progress.color === "yellow"){
+              colour = "red";
+            }
+            else {
+              colour = "yellow";
+
+            }
+          }
+        }
+
+        this.abilityBar.progress.color = colour;
+
+        this.face.stroke = colour;
+        this.body.stroke = colour;
+
+        for (let spike of this.pokeys){
+          spike.color = colour;
+        }
+        this.selfDestruct ++;
+        if (this.selfDestruct >= 150){
+          this.die();
+        }
+      }
+      
+    }
+  }
+  unpuff(){
+    if (!keyIsDown(16) && this.timer > 0 || this.dead){
+
+      this.face.stroke = 'black';
+      this.body.stroke = 'black';
+
+      if (this.puffed){
+        for (let spike of this.pokeys){
+          spike.remove();
+        }
+      }
+      this.pokeys = [];
+      this.selfDestruct = 0;
+      this.timer = 0;
+      this.puffed = false;
+    }
+    
+  }
+
+
+  docar(){
+    this.vehicle.spawnCheck();
+    this.vehicle.spikeCheck();
+    this.vehicle.respawn(this.vehicle.pokeys);
+    this.vehicle.displayUI();
+    if (!this.vehicle.dead){
+      this.vehicle.drive();
+    }
+    this.vehicle.specialCleanup();
+    this.vehicle.rip();
+  }
+  
+}
+class Swing{
+  constructor(x,y,lap,rotation,checkpoint,colourA,colourB){
+    this.type = Swing;
+    this.facelength = 18;
+    this.facewidth = 15;
+    this.bodylength = 18;
+    this.bodywidth = 18;
+    this.vehicle = new Car(x,y,lap,Swing,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 7.5, 11.5, 3, 1.4, this.grapple, this.ungrapple,"Grapple","SWINGIN'!!",300,checkpoint,colourA,colourB,"lime");
+
+    this.vehicle.timer = 0;
+    this.vehicle.grappled = false;
+  }
+  
+  grapple(){
+    if (!this.grappled){
+      this.hook = new Sprite(mouse.x,mouse.y,0);
+      this.hook.collider ='k';
+      // for (let item of everything){
+      //   this.hook.overlaps(item);
+      // }
+      this.towlineA = new DistanceJoint(this.face,this.hook);
+      this.towlineB = new DistanceJoint(this.body,this.hook);
+      
+      this.face.stroke = "lime";
+      this.body.stroke = "lime";
+
+      // this.towlineA.springiness = 1;
+      // this.towlineB.springiness = 1;
+      this.timer = 300;
+      this.grappled = true;
+    }
+  }
+  ungrapple(){
+    if (!keyIsDown(16) && this.grappled || this.dead){
+      this.hook.remove();
+      this.towlineA.remove();
+      this.towlineB.remove();
+      this.timer = 0;
+      this.grappled = false;
+      this.face.stroke = "black";
+      this.body.stroke = "black";
+    }
+    
+  }
+
+
+  docar(){
+    this.vehicle.spawnCheck();
+    this.vehicle.spikeCheck();
+    let list = [];
+    if (this.vehicle.grappled){
+      list = [this.vehicle.towlineA, this.vehicle.towlineB,this.vehicle.hook];
+    }
+    this.vehicle.respawn(list);
+    this.vehicle.displayUI();
+    if (!this.vehicle.dead){
+      this.vehicle.drive();
+    }
+    this.vehicle.specialCleanup();
+    this.vehicle.rip();
   }
   
 }
 class Sport{
-  constructor(x,y,rotation){
+  constructor(x,y,lap,rotation,checkpoint,colourA,colourB){
     this.type = Sport;
     this.facelength = 15;
-    this.facewidth = 19;
+    this.facewidth = 19.5;
     this.bodylength = 16;
     this.bodywidth = 20;
-    this.bumper = new Sprite(x*big-this.facelength,y*big);
-    this.bumper.d = this.facewidth;
-    this.bumper.drag = 2.5;
-    this.bumper.bounciness = 0.8;
-    everything.push(this.bumper);
-    this.vehicle = new Car(x,y,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 16, 3, 2.5, this.handbrake, this.unhandbrake);
-    this.front = new GlueJoint(this.bumper,this.vehicle.face);
+    this.vehicle = new Car(x,y,lap,Sport,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 16, 0.5, 2.5, this.hbrake, this.unhbrake, "Handbrake","HANDBRAKE!!",300,checkpoint,colourA,colourB,"tan");
+    this.vehicle.bumper = new Sprite(x*big-this.facelength,y*big);
+    this.vehicle.bumper.d = this.facewidth;
+    this.vehicle.bumper.drag = 2.5;
+    this.vehicle.bumper.bounciness = 0.8;
+    this.vehicle.bumper.color = colourB;
+    this.vehicle.bumper.layer = 0.5
+    everything.push(this.vehicle.bumper);
+
+    this.front = new GlueJoint(this.vehicle.bumper,this.vehicle.face);
+
     this.vehicle.handbrake = false;
+    this.vehicle.timer = 0;
+    // this.vehicle.abilityBar.barmin =20;
   }
-  handbrake(){
+  hbrake(){
     // handbrake
+    this.timer = 300;
     for (let i = 0; i < 20; i++){
       this.move -= toZero(this.move);
     }
     this.body.speed -= toZero(this.body.speed)*10**-1;
-    console.log("handbrake");
+
+    this.face.stroke = "brown";
+    this.body.stroke = "brown";
+    this.bumper.stroke = "brown";
+    
+    // console.log("handbrake");
   }
-  unhandbrake(){
-    if(this.hanbrake === true){
-      this.handbrake = false;
+  unhbrake(){
+    if (!keyIsDown(16)){
+      this.timer = 0;
+      this.face.stroke = "black";
+      this.body.stroke = "black";
+      this.bumper.stroke = "black";
     }
+    this.handbrake = false;
   }
   docar(){
     this.vehicle.spawnCheck();
     this.vehicle.spikeCheck();
+    this.vehicle.respawn([this.vehicle.bumper,this.front]);
+    this.vehicle.displayUI();
     if (!this.vehicle.dead){
       this.vehicle.drive();
+    }
+    this.vehicle.specialCleanup();
+    this.vehicle.rip();
+    if (this.vehicle.dead){
+      this.bumper.color = "black";
+      this.bumper.stroke = "darkgrey";
     }
   }
 }
 class Delor{
-  constructor(x,y,rotation){
+  constructor(x,y,lap,rotation,checkpoint,colourA,colourB){
     this.type = Delor;
     this.facelength = 15;
     this.facewidth = 19;
@@ -268,52 +519,73 @@ class Delor{
     this.bodywidth = 20;
     // this.bumper = new Sprite(x+this.facelength,y);
     // this.bumper.d = this.facewidth;
-    this.vehicle = new Car(x,y,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11.5, 4.5, 2.3, this.blink, this.cooldown, );
+    this.vehicle = new Car(x,y,lap,Delor,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11.5, 4.5, 2.3, this.blink, this.recharge, "Blink", "On Cooldown",350,checkpoint,colourA,colourB,"yellow");
     this.vehicle.phased = false;
     this.vehicle.timer = 0;
-    this.vehicle.time = 300;
+    this.vehicle.abilityStop = 190;
+    this.vehicle.body.layer = 2;
+    this.vehicle.face.layer = 2;
     // this.front = new GlueJoint(this.bumper,this.vehicle.face);
   }
 
   blink(){
-    if (!this.phased){
-      if(this.timer <=0){
+    if (!this.phased && this.timer <= 0){
         this.phased = true;
-        this.timer = 0;
-        for (let item of everything){
-          this.body.overlaps(item);
-          this.face.overlaps(item);
-        }
-        console.log("blinked");
-      }
+        this.timer = 350;
+        this.body.stroke = 'gold';
+        this.face.stroke = 'gold';
+        this.body.collider = "none";
+        this.face.collider = "none";
+        this.abilityBar.topText = "Blinked";
+        this.abilityBar.progress.color = "gold";
+        // console.log("blinked");
     }
   }
-  cooldown(){
+  recharge(){
     if(this.phased){
-      this.timer ++;
-      if (this.timer >= this.time){
+      this.timer --;
+      if (this.timer <= this.time-this.abilityStop){
         this.phased = false;
-        for (let item of everything){
-          this.body.collides(item);
-          this.face.collides(item);
-        }
-        console.log("unblinked");
+        this.body.stroke = 'black';
+        this.face.stroke = 'black';
+        this.abilityBar.topText = "UNBLINKED";
+        this.abilityBar.progress.color = 'red';
+        this.body.collider = "d";
+        this.face.collider = "d";
+      }
+      else if (this.timer <= this.time-this.abilityStop+40){
+        this.abilityBar.progress.color = "darkorange";     
+        this.body.stroke = 'darkorange';
+        this.face.stroke = 'darkorange';
+      }
+      else if (this.timer <= this.time-this.abilityStop+70){
+        this.abilityBar.progress.color = "orange";
+        this.body.stroke = 'orange';
+        this.face.stroke = 'orange';
       }
     }
     else{
-      this.timer --;
       if (this.timer <=0){
-        console.log("recharged");
+        // this.abilityBar.topText = "Blinked";
+      }
+      else{
+        this.timer --;
       }
     }
   }
 
   docar(){
     this.vehicle.spawnCheck();
-    this.vehicle.spikeCheck();
+    // if(!this.vehicle.phased){
+      this.vehicle.spikeCheck();
+    // }
+    this.vehicle.respawn([]);
+    this.vehicle.displayUI();
     if (!this.vehicle.dead){
       this.vehicle.drive();
     }
+    this.vehicle.specialCleanup();
+    this.vehicle.rip();
   }
 
   // display(playerTrue){
@@ -321,80 +593,106 @@ class Delor{
   // }
 }
 class Rocket{
-  constructor(x,y,lap,rotation){
+  constructor(x,y,lap,rotation,checkpoint,colourA,colourB){
     this.type = Rocket;
     this.facelength = 19;
     this.facewidth = 19;
     this.bodylength = 16;
     this.bodywidth = 19.5;
-    this.bumper = new Sprite(x*big-this.facelength,y*big);
-    this.bumper.w = Math.sqrt((this.facewidth+1)**2/2);
-    this.bumper.h = Math.sqrt((this.facewidth+1)**2/2);
-    this.bumper.rotation = 45;
-    this.bumper.drag = 1;
-    this.bumper.bounciness = 0;
-    everything.push(this.bumper);
     this.lap = lap;
-    this.vehicle = new Car(x,y,lap,this.type,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.cooldown);
-    this.front = new GlueJoint(this.bumper,this.vehicle.face);
+    this.vehicle = new Car(x,y,lap,this.type,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.recharge,"Rocket","On Cooldown",200,checkpoint,colourA,colourB,"purple");
+    
+    this.vehicle.bumper = new Sprite(x*big-this.facelength,y*big);
+    this.vehicle.bumper.w = Math.sqrt((this.facewidth+4)**2/2);
+    this.vehicle.bumper.h = Math.sqrt((this.facewidth+4)**2/2);
+    this.vehicle.bumper.rotation = 45;
+    this.vehicle.bumper.drag = 1;
+    this.vehicle.bumper.bounciness = 0;
+    this.vehicle.bumper.color = colourB;
+    everything.push(this.vehicle.bumper);
+    
+    this.front = new GlueJoint(this.vehicle.bumper,this.vehicle.face);
     this.vehicle.handbrake = false;
     this.vehicle.cooldown = false;
-    this.vehicle.timer = 0;
-    this.vehicle.time = 200;
   }
   rocket(){
+    
     if (!this.cooldown){
       if(this.timer <=0){
+        
         this.cooldown = true;
         this.timer = this.time;
         this.body.applyForce(2000);
+        if (this.move < 8){
+          this.move = 8;
+        }
+
+        this.body.stroke = "purple";
+        this.face.stroke = "purple";
+        this.bumper.stroke = "purple";
         
         console.log("rocketed");
       }
     }
   }
 
-  cooldown(){
+  recharge(){
     if(this.cooldown){
       this.timer --;
+      if (this.timer <= this.time*2/3){
+        this.body.stroke = "black";
+        this.face.stroke = "black";
+        this.bumper.stroke = "black";
+      }
       if (this.timer <=0){
         this.cooldown = false;
-        console.log("recharged");
+        // console.log("recharged");
       }
     }
   }
   docar(){
     this.vehicle.spawnCheck();
     this.vehicle.spikeCheck();
-    this.vehicle.displayLap();
+    this.vehicle.respawn([this.vehicle.bumper,this.front]);
+    this.vehicle.displayUI();
     if (!this.vehicle.dead){
       this.vehicle.drive();
     }
+    this.vehicle.specialCleanup();
+    this.vehicle.rip();
+    if (this.vehicle.dead){
+      this.bumper.color = "black";
+      this.bumper.stroke = "darkgrey";
+    }
   }
-  
-  
-  // deathTimer(start,num){
-  //   while()
-  // }
 
 }
 
 class Car{
-  constructor(x,y,lap,type,rotation,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2){
+  constructor(x,y,lap,type,rotation,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2, backText,topText, abilityTime, checkpoint, colourA, colourB, abilitycolour){
     this.body = new Sprite(x*big+backlength/2,y*big);
     this.body.w = backlength;
     this.body.h = backwidth;
+
+    this.body.color = colourA;
     
     everything.push(this.body);
     this.face = new Sprite(x*big-facelength/2,y*big);
     this.face.w = facelength;
     this.face.h = facewidth;
+
+    this.face.color = colourB;
     
     everything.push(this.face);
     this.midsec = new GlueJoint(this.body,this.face);
 
-    this.body.rotateTo(rotation,22);
-// this.body.rotation = rotation;
+    this.colourA = colourA;
+    this.colourB = colourB;
+    
+  
+    // this.body.rotateTo(rotation,22);
+
+    // this.body.rotation = rotation;
     this.body.drag = 2;
     this.body.rotationDrag = 3;
     this.body.bounciness = 0.8;
@@ -410,17 +708,34 @@ class Car{
     this.braking = braking;
     this.handling = handling;
 
-    this.thing = thing;
-    this.thing2 = thing2;
-
     this.type = type;
 
-
-    this.checkpoint = 0;
+    this.checkpoint = checkpoint;
     this.lap = lap;
+    this.lapCounter = new Sprite(0,0,60,40);
+    this.lapCounter.collider = "none";
+    this.lapCounter.color = 'green';
+    this.lapCounter.text = "Lap:" + this.lap + "/" + laps;
     this.dead = false;
     
     this.respawnCommit = 0;
+    // Sport's shorter respawn time
+    this.respawnMod = 1;
+    if(this.type === Sport){
+      this.respawnMod = 2;
+    }
+    this.respawnBar = new Bar(300,20,5,10+this.lapCounter.h,"red","R to Respawn", "", respawntime, 0);
+    
+
+    this.thing = thing;
+    this.thing2 = thing2;
+
+    this.abilityBar = new Bar(300,20,5,10+this.respawnBar.height+this.respawnBar.yOffset, abilitycolour, "Press Shift to " + backText, topText,abilityTime,0);
+    this.timer = 0;
+    this.time = abilityTime;
+
+    this.speedometer = new Bar(270,35,5, 20+this.abilityBar.height+this.abilityBar.yOffset, "yellow", "W = Gas, ' '=Reverse", "",16,0);
+
   }
 
   special(){
@@ -431,13 +746,21 @@ class Car{
   }
 
   carCenter(){
-    return {x:(this.body.x+this.face.x)/2, y: (this.body.y+this.face.y)/2};
+    return {x:(this.body.x/big+this.face.x/big)/2, y: (this.body.y/big+this.face.y/big)/2};
   }
 
   die(){
     this.midsec.remove();
-    this.tod = millis();
     this.dead = true;
+  }
+  rip(){
+    if (this.dead){
+      this.face.color = "black";
+      this.body.color = "black";
+      this.face.stroke = "darkgrey";
+      this.body.stroke = "darkgrey";
+      
+    }
   }
   spikeCheck(){
     for (let part of [this.body,this.face]){
@@ -453,12 +776,13 @@ class Car{
   spawnCheck(){
     for(let check of checkpoints){
       if(this.face.overlaps(check.spot)||this.body.overlaps(check.spot)){
-        if (check.number > this.checkpoint){
+        if (check.number === this.checkpoint +1){
           this.checkpoint = check.number;
         }
         else if(check.number === 0 && this.checkpoint === checkpoints.length-1){
           this.checkpoint = check.number;
           this.lap ++;
+          // console.log("NEW LAP");
           if (this.lap > laps){
             finsished.push(this);
           }
@@ -467,10 +791,38 @@ class Car{
     }
   }
 
-  displayLap(){
-    // let number = this.lap
-    let center = this.carCenter();
-    text(this.lap, center.x,center.y);
+  displayUI(){
+    this.lapCounter.x = this.face.x-windowWidth/2+(this.lapCounter.w/2+5);
+    this.lapCounter.y = this.face.y-windowHeight/2+(this.lapCounter.h/2+5);
+    this.lapCounter.text = "Lap:" + this.lap + "/" + laps;
+
+    this.abilityBar.update(this.timer);
+    this.abilityBar.display(this.face);
+
+    this.respawnBar.update(this.respawnCommit);
+    this.respawnBar.display(this.face);
+
+    // let avspeed = Math.floor((this.body.speed+this.face.speed)/2*10)/10;
+    let avspeed = Math.abs(Math.floor(this.move*10)/10);
+    this.speedometer.update(avspeed);
+    if(avspeed >= 1){
+      if(this.move === this.maxspeed){
+        avspeed = avspeed + " @ Max"; 
+        this.speedometer.progress.color = "gold";
+      }
+      else{
+        this.speedometer.progress.color = "yellow";
+        if (this.speedometer.backText !== ""){
+          this.speedometer.backText = "";
+        }
+      }
+    }
+    else{
+      avspeed = "";
+      this.speedometer.progress.color = "yellow";
+    }
+    this.speedometer.progress.text = avspeed;
+    this.speedometer.display(this.face);
   }
 
   drive() {
@@ -491,10 +843,10 @@ class Car{
     }
     
     this.body.applyTorque(this.turn/8);
-    //special cleanup
-    if (this.thing2 !== null){
-      this.specialCleanup();
-    }
+    // //special cleanup
+    // if (this.thing2 !== null){
+    //   this.specialCleanup();
+    // }
 
     // gas
     if (keyIsDown(87)){
@@ -536,14 +888,20 @@ class Car{
     // this.turn -= toZero(this.turn)*this.handling;
     this.turn = 0;
   }
-  respawn(){
+  respawn(extraRemove){
     if(keyIsDown(82)){
-      this.respawnCommit += 1;
+      this.respawnCommit += this.respawnMod;
       if(this.respawnCommit >= respawntime){
         this.respawnCommit = 0;
-        // console.log(this.type);
-        my.cheese = respawn(this.checkpoint, my.cheese,this.lap, this.type);
-        checkPFix(checkpoints);
+        for (let item of extraRemove){
+          item.remove();
+        }
+        cheese = respawn(this.checkpoint,cheese,this.lap, this.type);
+      }
+    }
+    else{
+      if(this.respawnCommit >0){
+        this.respawnCommit -= 0.5;
       }
     }
   }
@@ -553,10 +911,11 @@ class Car{
 
 let big = 1.4;
 class Wall{
-  constructor(x,y,width,height,rotation, spikes){
+  constructor(x,y,width,height,rotation){
     this.cement = new Sprite(x*big,y*big,width*big,height*big);
     this.cement.collider = "static";
     this.cement.rotation = rotation;
+    this.cement.layer = 1;
     everything.push(this.cement);
   }
 }
@@ -601,16 +960,26 @@ class Bend{
   }
 }
 class Spike{
-  constructor(x,y,rotation){
+  constructor(x,y,rotation,puff){
     let thing = 20;
     let thang = 6;
+    let mode;
+    if (puff){
+      mode = 'dynamic';
+    }
+    else{
+      mode = 'static';
+    }
     this.metal = new Sprite(x*big,y*big, [
       [thing*big, thang*big],
       [-1*thing*big, thang*big],
       [0, -12*big]
-    ]);
-    this.metal.collider = "static";
+    ],mode);
+    this.metal.mass = 0;
+    this.metal.drag = -1;
+    
     this.metal.rotation = rotation;
+    this.metal.layer = 0.2
     everything.push(this.metal);
     spikes.push(this.metal);
   }
@@ -620,15 +989,7 @@ class Spike{
 function makecheckP(x,y,angle,list,size){
   let checker = new CheckP(x,y,angle,list.length,size);
   list.push(checker);
-  checker.fix();
 }
-function checkPFix(list){
-  for (let checker of list){
-    // console.log(checker);
-    checker.fix();
-  }
-}
-
 class CheckP{
   constructor(x,y,angle,number,size){
     this.x = x;
@@ -643,14 +1004,60 @@ class CheckP{
     }
     this.spot.layer = 0;
     this.spot.rotation = angle;
-    this.spot.collider = "static";
+    this.spot.collider = "none";
+    this.spot.color = 'grey';
     this.number = number;
   }
-  fix(){
-    for (let item of everything){
-      this.spot.overlaps(item);
+}
+
+class Bar{
+  constructor(width,height,xOffset,yOffset,colour,backText,topText,inmax){
+    this.back = new Sprite(0,0,width,height);
+    this.back.collider = "none";
+    this.back.color = 'white';
+    this.back.stroke = 'black';
+    this.back.layer = 4;
+    this.backText = backText;
+    this.progress = new Sprite(0,0,0,height);
+    this.progress.collider = "none";
+    this.progress.color = colour;
+    this.progress.stroke = 'black';
+    this.progress.layer = 5;
+    this.topText = topText;
+    this.width = width;
+    this.height = height;
+    this.xOffset =xOffset;
+    this.yOffset = yOffset;
+    this.inmax = inmax;
+  }
+  display(face){
+    this.back.x = face.x-windowWidth/2+(this.back.w/2+this.xOffset);
+    this.back.y = face.y-windowHeight/2+(this.back.h/2+this.yOffset);
+
+    this.progress.x = face.x-windowWidth/2+(this.progress.w/2+this.xOffset);
+    this.progress.y = face.y-windowHeight/2+(this.progress.h/2+this.yOffset);
+  }
+  remove(){
+    this.back.remove();
+    this.progress.remove();
+  }
+  update(input){
+    let bar = map(input,0,this.inmax,0,this.width);
+    this.progress.w = bar;
+    if(this.progress.w >= this.width/3){
+      this.progress.text = this.topText;
+    }
+    else{
+      this.progress.text = "";
+    }
+    if(this.progress.w <= 0){
+      this.back.text = this.backText;
+    }
+    else{
+      this.back.text = "";
     }
   }
+
 }
 
 function toZero(number){
