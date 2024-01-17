@@ -1,3 +1,13 @@
+
+let shared, my, guests;
+
+function preload() {
+  partyConnect("wss://demoserver.p5party.org", "drifting_game");
+  shared = partyLoadShared("shared", { players: []});
+  my = partyLoadMyShared();
+  guests = partyLoadGuestShareds();
+}
+
 let cheese;
 let dummy;
 let ratio;
@@ -79,17 +89,56 @@ function setup() {
 function draw() {
   clear();
   
+  // Update and draw all players
+  for (let player of shared.players) {
+    player.docar();
+  }
+  
+  // Update and draw local player
   my.cheese.docar();
+  
   if(keyIsDown(82)){
+    // Restart the game
+    resetGame();
+  }
+}
+
+function resetGame() {
+  // Reset player positions and other game variables
+  shared.players = [];
+  my.cheese = makeVehicle(1000,870,1,0,Rocket);
+  // Reset any other game state variables here
+}
+
     my.cheese.vehicle.respawnCommit += 1;
     if(my.cheese.vehicle.respawnCommit >= respawntime){
       my.cheese.vehicle.respawnCommit = 0;
       my.cheese = respawn(my.cheese.vehicle.checkpoint, my.cheese, my.cheese.type);
       checkPFix(checkpoints);
     }
+
+  
+  // Send local player data to other players
+  partySend(my);
+  
+  // Receive and update other players' data
+  for (let guest of guests) {
+    let guestData = partyLoadGuestShared(guest);
+    if (guestData) {
+      shared.players[guest] = guestData;
+    }
   }
+  
+  // Remove disconnected players
+  for (let player in shared.players) {
+    if (!guests.includes(player)) {
+      delete shared.players[player];
+    }
+  }
+  
+  // Update shared data
+  partySaveShared(shared);
   camera.pos = my.cheese.vehicle.face.pos;
-}
 
 
 // TowT related things

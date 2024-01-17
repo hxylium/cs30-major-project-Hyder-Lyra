@@ -1,11 +1,11 @@
-let shared, my, guests;
+// let shared, my, guests;
 
-function preload() {
-  partyConnect("wss://demoserver.p5party.org", "drifting_game");
-  shared = partyLoadShared("shared", { players: []});
-  my = partyLoadMyShared();
-  guests = partyLoadGuestShareds();
-}
+// function preload() {
+//   partyConnect("wss://demoserver.p5party.org", "drifting_game");
+//   shared = partyLoadShared("shared", { players: []});
+//   my = partyLoadMyShared();
+//   guests = partyLoadGuestShareds();
+// }
 
 // function setup() {
 //   createCanvas(500, 400);
