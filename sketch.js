@@ -1,5 +1,11 @@
+let shared, my, guests;
 
-
+function preload() {
+  partyConnect("wss://demoserver.p5party.org", "something");
+  shared = partyLoadShared("shared", { players: []});
+  my = partyLoadMyShared();
+  guests = partyLoadGuestShareds();
+}
 
 
 let cheese;
@@ -30,7 +36,8 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(700,380,1,0,Bubble,0,"magenta","darkgrey");
+  cheese = makeVehicle(700,380,1,0,Bubble,0,"magenta","darkgrey")
+
   camera.pos = cheese.vehicle.face.pos;
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
@@ -109,6 +116,7 @@ function makeVehicle(x,y,lap,rotation,type,checkpoint,colourA,colourB){
   let beep = new type(x,y,lap,rotation,checkpoint,colourA,colourB);
   beep.vehicle.dead = false;
   beep.self = beep;
+  console.log(beep);
   return beep;
 }
 
