@@ -30,7 +30,7 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(700,380,1,0,Bubble,0,"magenta","darkgrey");
+  cheese = makeVehicle(700,380,1,0,Delor,0,"magenta","darkgrey");
   camera.pos = cheese.vehicle.face.pos;
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
@@ -117,7 +117,7 @@ class Bubble{
     this.facewidth = 18;
     this.bodylength = 18;
     this.bodywidth = 21;
-    this.vehicle = new Car(x,y,lap,Bubble,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 7.0, 10.5, 3, 1.0, this.puff, this.unpuff,"Shield","Protec!",300,checkpoint,colourA,colourB);
+    this.vehicle = new Car(x,y,lap,Bubble,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 8.0, 10.5, 3, 1.0, this.block, this.unblock,"Shield","Protec!",400,checkpoint,colourA,colourB);
 
     
     this.vehicle.body.rotationDrag = 5;
@@ -130,9 +130,9 @@ class Bubble{
     this.vehicle.selfDestruct = 0;
   }
   
-  puff(){
+  block(){
     // make shield
-    if (!this.shielded){
+    if (!this.shielded && this.timer <= 0){
 
       this.timer = this.time;
       this.face.stroke = 'turquoise';
@@ -144,31 +144,49 @@ class Bubble{
       this.shield = new Sprite(mid.x*big, mid.y*big, 10);
       this.shield.bounciness = 10;
       this.shield.layer = 0.5;
+      this.shield.drag = 0;
       this.shield.overlaps(this.face);
       this.shield.overlaps(this.body);
       this.shield.colour = "lightblue";
       this.shield.stroke = "turquoise";
       this.handle = new GlueJoint(this.shield, this.body);
 
+      this.face.drag = 0;
+      this.body.drag = 0;
+
     }
   }
-  unpuff(){
+  unblock(){
     if (this.shielded){
       this.timer --;
-      if (this.timer === 0 || this.dead){
+      if(this.timer >=120){
+        this.move = 0;
+        if (this.timer === 120){
+          this.move = 3;
+        }
+      }
+
+      if(this.timer <= 0){
+        this.shielded = false;
+      }
+      else if (this.timer <= 100 || this.dead){
         this.face.stroke = 'black';
         this.body.stroke = 'black';
 
         this.shield.remove();
         this.handle.remove();
 
-        this.timer = 0;
-        this.shielded = false;
+        this.face.drag = 2.5;
+        this.body.drag = 2;
       }
-      else if(this.shield.radius < 21){
+      else if (this.timer <= 120 && this.shield.radius){
+        this.shield.radius --;
+      }
+      else if(this.shield.radius < 31){
         this.shield.radius ++;
         
       }
+      
         
       
     }
@@ -179,7 +197,11 @@ class Bubble{
   docar(){
     this.vehicle.spawnCheck();
     this.vehicle.spikeCheck();
-    this.vehicle.respawn();
+    let list = [];
+    if (this.vehicle.shielded){
+      list = [this.vehicle.shield,this.vehicle.handle];
+    }
+    this.vehicle.respawn(list);
     this.vehicle.displayUI();
     if (!this.vehicle.dead){
       this.vehicle.drive();
@@ -205,7 +227,6 @@ class Bur{
     this.vehicle.timer = 0;
     this.vehicle.puffed = false;
     this.vehicle.pokeys = [];
-    this.vehicle.bones = [];
 
     this.vehicle.abilityStart = 60;
     this.vehicle.selfDestruct = 0;
@@ -235,20 +256,23 @@ class Bur{
       // console.log(mid);
       let radius = 21;
   
-      this.pokeys.push(new Spike(mid.x-1*radius,mid.y+0*radius,180,true));
-      this.pokeys.push(new Spike(mid.x-0.71*radius,mid.y-0.71*radius,225,true));
-      this.pokeys.push(new Spike(mid.x+0*radius,mid.y-1*radius,270,true));
-      this.pokeys.push(new Spike(mid.x+0.71*radius,mid.y-0.71*radius,315,true));
-      this.pokeys.push(new Spike(mid.x+1*radius,mid.y+0*radius,0,true));
-      this.pokeys.push(new Spike(mid.x+0.71*radius,mid.y+0.71*radius,45,true));
-      this.pokeys.push(new Spike(mid.x+0*radius,mid.y+1*radius,90,true));
-      this.pokeys.push(new Spike(mid.x-0.71*radius,mid.y+0.71*radius,135,true));
-      
+      this.pokeys.push(new Spike(mid.x-1*radius,mid.y+0*radius,180,true).metal);
+      this.pokeys.push(new Spike(mid.x-0.71*radius,mid.y-0.71*radius,225,true).metal);
+      this.pokeys.push(new Spike(mid.x+0*radius,mid.y-1*radius,270,true).metal);
+      this.pokeys.push(new Spike(mid.x+0.71*radius,mid.y-0.71*radius,315,true).metal);
+      this.pokeys.push(new Spike(mid.x+1*radius,mid.y+0*radius,0,true).metal);
+      this.pokeys.push(new Spike(mid.x+0.71*radius,mid.y+0.71*radius,45,true).metal);
+      this.pokeys.push(new Spike(mid.x+0*radius,mid.y+1*radius,90,true).metal);
+      this.pokeys.push(new Spike(mid.x-0.71*radius,mid.y+0.71*radius,135,true).metal);
+      let bones = []
       for (let spike of this.pokeys){
         // spike.metal.color = this.body.color;
-        spike.metal.color = 'pink';
-        this.bones.push(new GlueJoint(this.face,spike.metal));
-        this.bones.push(new DistanceJoint(this.body,spike.metal));
+        spike.color = 'pink';
+        bones.push(new GlueJoint(this.face,spike));
+        bones.push(new DistanceJoint(this.body,spike));
+      }
+      for (let item of bones){
+        this.pokeys.push(item);
       }
       this.puffed = true;
     }
@@ -262,7 +286,7 @@ class Bur{
       let danger = 0;
 
       for (let spike of this.pokeys){
-        danger += spike.metal.speed;
+        danger += spike.speed;
       }
 
       danger = danger/8 -this.face.speed;
@@ -279,7 +303,7 @@ class Bur{
         this.body.stroke = "orange";
 
         for (let spike of this.pokeys){
-          spike.metal.color = "orange";
+          spike.color = "orange";
         }
       }
       
@@ -306,7 +330,7 @@ class Bur{
         this.body.stroke = colour;
 
         for (let spike of this.pokeys){
-          spike.metal.color = colour;
+          spike.color = colour;
         }
         this.selfDestruct ++;
         if (this.selfDestruct >= 100){
@@ -324,14 +348,10 @@ class Bur{
 
       if (this.puffed){
         for (let spike of this.pokeys){
-          spike.metal.remove();
-        }
-        for (let bone of this.bones){
-          bone.remove();
+          spike.remove();
         }
       }
       this.pokeys = [];
-      this.bones = [];
       this.selfDestruct = 0;
       this.timer = 0;
       this.puffed = false;
@@ -343,7 +363,7 @@ class Bur{
   docar(){
     this.vehicle.spawnCheck();
     this.vehicle.spikeCheck();
-    this.vehicle.respawn();
+    this.vehicle.respawn(this.vehicle.pokeys);
     this.vehicle.displayUI();
     if (!this.vehicle.dead){
       this.vehicle.drive();
@@ -396,7 +416,11 @@ class Swing{
   docar(){
     this.vehicle.spawnCheck();
     this.vehicle.spikeCheck();
-    this.vehicle.respawn();
+    let list = [];
+    if (this.vehicle.grappled){
+      list = [this.vehicle.towlineA, this.vehicle.towlineB,this.vehicle.hook];
+    }
+    this.vehicle.respawn(list);
     this.vehicle.displayUI();
     if (!this.vehicle.dead){
       this.vehicle.drive();
@@ -444,7 +468,7 @@ class Sport{
   docar(){
     this.vehicle.spawnCheck();
     this.vehicle.spikeCheck();
-    this.vehicle.respawn();
+    this.vehicle.respawn([this.bumper,this.front]);
     this.vehicle.displayUI();
     if (!this.vehicle.dead){
       this.vehicle.drive();
@@ -527,10 +551,10 @@ class Delor{
 
   docar(){
     this.vehicle.spawnCheck();
-    if(!this.vehicle.phased){
+    // if(!this.vehicle.phased){
       this.vehicle.spikeCheck();
-    }
-    this.vehicle.respawn();
+    // }
+    this.vehicle.respawn([]);
     this.vehicle.displayUI();
     if (!this.vehicle.dead){
       this.vehicle.drive();
@@ -603,7 +627,7 @@ class Rocket{
   docar(){
     this.vehicle.spawnCheck();
     this.vehicle.spikeCheck();
-    this.vehicle.respawn();
+    this.vehicle.respawn([this.vehicle.bumper,this.front]);
     this.vehicle.displayUI();
     if (!this.vehicle.dead){
       this.vehicle.drive();
@@ -824,11 +848,14 @@ class Car{
     // this.turn -= toZero(this.turn)*this.handling;
     this.turn = 0;
   }
-  respawn(){
+  respawn(extraRemove){
     if(keyIsDown(82)){
       this.respawnCommit += this.respawnMod;
       if(this.respawnCommit >= respawntime){
         this.respawnCommit = 0;
+        for (let item of extraRemove){
+          item.remove();
+        }
         cheese = respawn(this.checkpoint,cheese,this.lap, this.type);
       }
     }
