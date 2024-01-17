@@ -26,11 +26,11 @@ let checkpoints = [];
 function setup() {
   createCanvas(windowWidth, windowHeight);
   
-  stroke = 6;
+  stroke = 100;
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(700,380,1,0,Bur,0,"magenta","darkgrey");
+  cheese = makeVehicle(700,380,1,0,Sport,0,"magenta","darkgrey");
   camera.pos = cheese.vehicle.face.pos;
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
@@ -80,6 +80,7 @@ function setup() {
 
 
 function draw() {
+  createCanvas(windowWidth, windowHeight);
   clear();
   background("lightgrey")
   
@@ -118,7 +119,7 @@ class Bubble{
     this.facewidth = 18;
     this.bodylength = 18;
     this.bodywidth = 21;
-    this.vehicle = new Car(x,y,lap,Bubble,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 8.0, 10.5, 3, 1.0, this.block, this.unblock,"Shield","Protec!",400,checkpoint,colourA,colourB);
+    this.vehicle = new Car(x,y,lap,Bubble,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 8.0, 10.5, 3, 1.0, this.block, this.unblock,"Shield","Protec!",400,checkpoint,colourA,colourB,"turquoise");
 
     
     this.vehicle.body.rotationDrag = 5;
@@ -160,10 +161,22 @@ class Bubble{
   unblock(){
     if (this.shielded){
       this.timer --;
-      if(this.timer >=120){
+      if(this.timer >120 && this.timer < this.time-50){
         this.move = 0;
-        if (this.timer === 120){
-          this.move = 3;
+        // if (this.timer === 120){
+        //   this.move = 3;
+        // }
+      }
+      else if(this.shielded){
+        if(toZero(this.move) === 1){
+          if(this.move < 3){
+            this.move = 3;
+          }
+        }
+        else{
+          if (this.move > -1.6){
+            this.move = -1.6
+          }
         }
       }
 
@@ -185,7 +198,6 @@ class Bubble{
       }
       else if(this.shield.radius < 31){
         this.shield.radius ++;
-        
       }
       
         
@@ -219,7 +231,7 @@ class Bur{
     this.facewidth = 18;
     this.bodylength = 12;
     this.bodywidth = 18;
-    this.vehicle = new Car(x,y,lap,Bur,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 7.0, 8.5, 3, 1.0, this.puff, this.unpuff,"Pufferfish","SPIKE!!",300,checkpoint,colourA,colourB);
+    this.vehicle = new Car(x,y,lap,Bur,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 7.0, 8.5, 3, 1.0, this.puff, this.unpuff,"Pufferfish","SPIKE!!",300,checkpoint,colourA,colourB,"pink");
     this.vehicle.face.mass = 0.5;
     this.vehicle.body.mass = 0.5;
     this.vehicle.face.drag = 1.5;
@@ -335,7 +347,7 @@ class Bur{
           spike.color = colour;
         }
         this.selfDestruct ++;
-        if (this.selfDestruct >= 100){
+        if (this.selfDestruct >= 150){
           this.die();
         }
       }
@@ -382,7 +394,7 @@ class Swing{
     this.facewidth = 15;
     this.bodylength = 18;
     this.bodywidth = 18;
-    this.vehicle = new Car(x,y,lap,Swing,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 7.5, 11.5, 3, 1.4, this.grapple, this.ungrapple,"Grapple","SWINGIN'!!",300,checkpoint,colourA,colourB);
+    this.vehicle = new Car(x,y,lap,Swing,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 7.5, 11.5, 3, 1.4, this.grapple, this.ungrapple,"Grapple","SWINGIN'!!",300,checkpoint,colourA,colourB,"lime");
 
     this.vehicle.timer = 0;
     this.vehicle.grappled = false;
@@ -445,7 +457,7 @@ class Sport{
     this.facewidth = 19.5;
     this.bodylength = 16;
     this.bodywidth = 20;
-    this.vehicle = new Car(x,y,lap,Sport,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 16, 0.5, 2.5, this.hbrake, this.unhbrake, "Handbrake","HANDBRAKE!!",300,checkpoint,colourA,colourB);
+    this.vehicle = new Car(x,y,lap,Sport,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 16, 0.5, 2.5, this.hbrake, this.unhbrake, "Handbrake","HANDBRAKE!!",300,checkpoint,colourA,colourB,"tan");
     this.vehicle.bumper = new Sprite(x*big-this.facelength,y*big);
     this.vehicle.bumper.d = this.facewidth;
     this.vehicle.bumper.drag = 2.5;
@@ -508,7 +520,7 @@ class Delor{
     this.bodywidth = 20;
     // this.bumper = new Sprite(x+this.facelength,y);
     // this.bumper.d = this.facewidth;
-    this.vehicle = new Car(x,y,lap,Delor,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11.5, 4.5, 2.3, this.blink, this.recharge, "Blink", "On Cooldown",350,checkpoint,colourA,colourB);
+    this.vehicle = new Car(x,y,lap,Delor,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11.5, 4.5, 2.3, this.blink, this.recharge, "Blink", "On Cooldown",350,checkpoint,colourA,colourB,"yellow");
     this.vehicle.phased = false;
     this.vehicle.timer = 0;
     this.vehicle.abilityStop = 190;
@@ -521,16 +533,12 @@ class Delor{
     if (!this.phased && this.timer <= 0){
         this.phased = true;
         this.timer = 350;
-        this.body.stroke = 'yellow';
-        this.face.stroke = 'yellow';
-        // for (let item of everything){
-        //   this.body.overlaps(item);
-        //   this.face.overlaps(item);
-        // }
+        this.body.stroke = 'gold';
+        this.face.stroke = 'gold';
         this.body.collider = "none";
         this.face.collider = "none";
         this.abilityBar.topText = "Blinked";
-        this.abilityBar.progress.color = "yellow";
+        this.abilityBar.progress.color = "gold";
         // console.log("blinked");
     }
   }
@@ -543,28 +551,23 @@ class Delor{
         this.face.stroke = 'black';
         this.abilityBar.topText = "UNBLINKED";
         this.abilityBar.progress.color = 'red';
-        // for (let item of everything){
-        //   this.body.collides(item);
-        //   this.face.collides(item);
-        // }
         this.body.collider = "d";
         this.face.collider = "d";
       }
       else if (this.timer <= this.time-this.abilityStop+40){
-        this.abilityBar.progress.color = "orange";     
-        this.body.stroke = 'orange';
-        this.face.stroke = 'orange';
+        this.abilityBar.progress.color = "darkorange";     
+        this.body.stroke = 'darkorange';
+        this.face.stroke = 'darkorange';
       }
       else if (this.timer <= this.time-this.abilityStop+70){
-        this.abilityBar.progress.color = "gold";
-        this.body.stroke = 'gold';
-        this.face.stroke = 'gold';
+        this.abilityBar.progress.color = "orange";
+        this.body.stroke = 'orange';
+        this.face.stroke = 'orange';
       }
     }
     else{
       if (this.timer <=0){
         // this.abilityBar.topText = "Blinked";
-        // this.abilityBar.progress.color = "yellow";
       }
       else{
         this.timer --;
@@ -598,7 +601,7 @@ class Rocket{
     this.bodylength = 16;
     this.bodywidth = 19.5;
     this.lap = lap;
-    this.vehicle = new Car(x,y,lap,this.type,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.recharge,"Rocket","On Cooldown",200,checkpoint,colourA,colourB);
+    this.vehicle = new Car(x,y,lap,this.type,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.recharge,"Rocket","On Cooldown",200,checkpoint,colourA,colourB,"purple");
     
     this.vehicle.bumper = new Sprite(x*big-this.facelength,y*big);
     this.vehicle.bumper.w = Math.sqrt((this.facewidth+4)**2/2);
@@ -667,7 +670,7 @@ class Rocket{
 }
 
 class Car{
-  constructor(x,y,lap,type,rotation,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2, backText,topText, abilityTime, checkpoint, colourA, colourB){
+  constructor(x,y,lap,type,rotation,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2, backText,topText, abilityTime, checkpoint, colourA, colourB, abilitycolour){
     this.body = new Sprite(x*big+backlength/2,y*big);
     this.body.w = backlength;
     this.body.h = backwidth;
@@ -728,7 +731,7 @@ class Car{
     this.thing = thing;
     this.thing2 = thing2;
 
-    this.abilityBar = new Bar(300,20,5,10+this.respawnBar.height+this.respawnBar.yOffset, "turquoise", "Press Shift to " + backText, topText,abilityTime,0);
+    this.abilityBar = new Bar(300,20,5,10+this.respawnBar.height+this.respawnBar.yOffset, abilitycolour, "Press Shift to " + backText, topText,abilityTime,0);
     this.timer = 0;
     this.time = abilityTime;
 
@@ -810,6 +813,9 @@ class Car{
       }
       else{
         this.speedometer.progress.color = "yellow";
+        if (this.speedometer.backText !== ""){
+          this.speedometer.backText = "";
+        }
       }
     }
     else{
