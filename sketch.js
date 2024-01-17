@@ -30,7 +30,7 @@ function setup() {
   ratio = smallest();
   ratio = ratio/20;
   
-  cheese = makeVehicle(700,380,1,0,Sport,0,"magenta","darkgrey");
+  cheese = makeVehicle(700,380,1,0,Bubble,0,"magenta","darkgrey");
   camera.pos = cheese.vehicle.face.pos;
   // dummy = new Delor(width/3, height/3);
   dwall2 = new SpWall(805,500,14);
@@ -110,7 +110,84 @@ function makeVehicle(x,y,lap,rotation,type,checkpoint,colourA,colourB){
   return beep;
 }
 
+class Bubble{
+  constructor(x,y,lap,rotation,checkpoint,colourA,colourB){
+    this.type = Bubble;
+    this.facelength = 13;
+    this.facewidth = 18;
+    this.bodylength = 18;
+    this.bodywidth = 21;
+    this.vehicle = new Car(x,y,lap,Bubble,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 7.0, 10.5, 3, 1.0, this.puff, this.unpuff,"Shield","Protec!",300,checkpoint,colourA,colourB);
 
+    
+    this.vehicle.body.rotationDrag = 5;
+
+
+    this.vehicle.timer = 0;
+    this.vehicle.shielded = false;
+
+    this.vehicle.abilityStart = 60;
+    this.vehicle.selfDestruct = 0;
+  }
+  
+  puff(){
+    // make shield
+    if (!this.shielded){
+
+      this.timer = this.time;
+      this.face.stroke = 'turquoise';
+      this.body.stroke = 'turquoise';
+      this.shielded = true;
+
+      let mid = this.carCenter();
+      // console.log(mid);
+      this.shield = new Sprite(mid.x*big, mid.y*big, 10);
+      this.shield.bounciness = 10;
+      this.shield.layer = 0.5;
+      this.shield.overlaps(this.face);
+      this.shield.overlaps(this.body);
+      this.shield.colour = "lightblue";
+      this.shield.stroke = "turquoise";
+      this.handle = new GlueJoint(this.shield, this.body);
+
+    }
+  }
+  unpuff(){
+    if (this.shielded){
+      this.timer --;
+      if (this.timer === 0 || this.dead){
+        this.face.stroke = 'black';
+        this.body.stroke = 'black';
+
+        this.shield.remove();
+        this.handle.remove();
+
+        this.timer = 0;
+        this.shielded = false;
+      }
+      else if(this.shield.radius < 21){
+        this.shield.radius ++;
+        
+      }
+        
+      
+    }
+    
+  }
+
+
+  docar(){
+    this.vehicle.spawnCheck();
+    this.vehicle.spikeCheck();
+    this.vehicle.respawn();
+    this.vehicle.displayUI();
+    if (!this.vehicle.dead){
+      this.vehicle.drive();
+    }
+    this.vehicle.specialCleanup();
+  }
+  
+}
 class Bur{
   constructor(x,y,lap,rotation,checkpoint,colourA,colourB){
     this.type = Bur;
@@ -119,7 +196,8 @@ class Bur{
     this.bodylength = 12;
     this.bodywidth = 18;
     this.vehicle = new Car(x,y,lap,Bur,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 7.0, 8.5, 3, 1.0, this.puff, this.unpuff,"Pufferfish","SPIKE!!",300,checkpoint,colourA,colourB);
-
+    this.vehicle.face.mass = 0.5;
+    this.vehicle.body.mass = 0.5;
     this.vehicle.face.drag = 1.5;
     this.vehicle.body.rotationDrag = 5;
 
@@ -398,10 +476,12 @@ class Delor{
         this.timer = 350;
         this.body.stroke = 'yellow';
         this.face.stroke = 'yellow';
-        for (let item of everything){
-          this.body.overlaps(item);
-          this.face.overlaps(item);
-        }
+        // for (let item of everything){
+        //   this.body.overlaps(item);
+        //   this.face.overlaps(item);
+        // }
+        this.body.collider = "none";
+        this.face.collider = "none";
         this.abilityBar.topText = "Blinked";
         this.abilityBar.progress.color = "yellow";
         // console.log("blinked");
@@ -416,10 +496,12 @@ class Delor{
         this.face.stroke = 'black';
         this.abilityBar.topText = "UNBLINKED";
         this.abilityBar.progress.color = 'red';
-        for (let item of everything){
-          this.body.collides(item);
-          this.face.collides(item);
-        }
+        // for (let item of everything){
+        //   this.body.collides(item);
+        //   this.face.collides(item);
+        // }
+        this.body.collider = "d";
+        this.face.collider = "d";
       }
       else if (this.timer <= this.time-this.abilityStop+40){
         this.abilityBar.progress.color = "orange";     
