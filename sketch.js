@@ -25,7 +25,7 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   // dummy = new Delor(width/3, height/3);
   
-  prepareRace("BnF",Saw,"magenta","lime");
+  prepareRace("BnF",Bubble,"magenta","lime");
   
 }
 
@@ -106,6 +106,7 @@ class Bubble{
       this.shield.bounciness = 3;
       this.shield.layer = 0.5;
       this.shield.drag = 0;
+      this.shield.mass = 1.0;
       this.shield.rotationDrag = 1;
 
       this.shield.colour = "lightblue";
@@ -474,7 +475,7 @@ class Sport{
     this.facewidth = 19.5;
     this.bodylength = 16;
     this.bodywidth = 20;
-    this.vehicle = new Car(x,y,lap,Sport,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 16, 0.5, 2.5, this.hbrake, this.unhbrake, "Handbrake","HANDBRAKE!!",300,checkpoint,colourA,colourB,"tan");
+    this.vehicle = new Car(x,y,lap,Sport,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 16, 6.5, 2.5, this.hbrake, this.unhbrake, "Handbrake","HANDBRAKE!!",300,checkpoint,colourA,colourB,"tan");
     if(rotation === 0){
       this.vehicle.bumper = new Sprite(x*big+this.facelength,y*big);
     }
@@ -535,8 +536,8 @@ class Sport{
     this.vehicle.specialCleanup();
     this.vehicle.rip();
     if (this.vehicle.dead){
-      this.bumper.color = "black";
-      this.bumper.stroke = "darkgrey";
+      this.vehicle.bumper.color = "black";
+      this.vehicle.bumper.stroke = "darkgrey";
     }
   }
   }
