@@ -17,14 +17,14 @@ let respawntime = 150;
 
 let checkpoints = [];
 
+let players = [];
+
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   // dummy = new Delor(width/3, height/3);
   
-  makeTrack("BnF");
-  cheese = makeVehicle(checkpoints[0].x,checkpoints[0].y,1,0,Bubble,0,"magenta","darkgrey");
-  camera.pos = cheese.vehicle.face.pos;
+  prepareRace("BnF",Rocket,"magenta","lime");
   
 }
 
@@ -36,9 +36,17 @@ function draw() {
   
   cheese.docar();
 
-  camera.pos = cheese.vehicle.face.pos;
+  let mid = cheese.vehicle.carCenter();
+  camera.x = mid.x*big;
+  camera.y = mid.y*big;
 }
 
+
+function prepareRace(race,carType,colourA,colourB){
+  makeTrack(race);
+  cheese = makeVehicle(checkpoints[0].x,checkpoints[0].y,1,checkpoints[0].rotation,carType,0,colourA,colourB);
+  players.push(cheese);
+}
 
 function respawn(checkNum,self,lap,type){
   let point = checkpoints[checkNum];
@@ -51,7 +59,7 @@ function respawn(checkNum,self,lap,type){
   self.vehicle.lapCounter.remove();
   self.vehicle.abilityBar.remove();
   self.vehicle.speedometer.remove();
-  return makeVehicle(point.x,point.y,lap,point.spot.rotation, type,checkNum,colourA,colourB);
+  return makeVehicle(point.x,point.y,lap,point.rotation, type,checkNum,colourA,colourB);
 
 }
 
@@ -94,7 +102,7 @@ class Bubble{
       let mid = this.carCenter();
       // console.log(mid);
       this.shield = new Sprite(mid.x*big, mid.y*big, 10);
-      this.shield.bounciness = 5;
+      this.shield.bounciness = 3;
       this.shield.layer = 0.5;
       this.shield.drag = 0;
       this.shield.rotationDrag = 1;
@@ -117,12 +125,12 @@ class Bubble{
         // }
       }
       else if(this.shielded){
-        if(this.move < 3 && toZero(this.move) === 1){
+        if(this.move < 3 && keyIsDown(87)){
           
           this.move = 3;
           
         }
-        else if (this.move > -1.6 && toZero(this.move) === -1){
+        else if (this.move > -1.6 && keyIsDown(32)){
             this.move = -1.6
           }
         }
@@ -155,6 +163,7 @@ class Bubble{
 
 
   docar(){
+    if(!this.vehicle.finished){
     this.vehicle.spawnCheck();
     if (!this.vehicle.shielded || this.vehicle.shield.radius < 31){
       this.vehicle.spikeCheck();
@@ -170,6 +179,7 @@ class Bubble{
     }
     this.vehicle.specialCleanup();
     this.vehicle.rip();
+  }
   }
   
 }
@@ -324,6 +334,7 @@ class Bur{
 
 
   docar(){
+    if(!this.vehicle.finished){
     this.vehicle.spawnCheck();
     this.vehicle.spikeCheck();
     this.vehicle.respawn(this.vehicle.pokeys);
@@ -333,6 +344,7 @@ class Bur{
     }
     this.vehicle.specialCleanup();
     this.vehicle.rip();
+  }
   }
   
 }
@@ -383,6 +395,7 @@ class Swing{
 
 
   docar(){
+    if(!this.vehicle.finished){
     this.vehicle.spawnCheck();
     this.vehicle.spikeCheck();
     let list = [];
@@ -397,6 +410,7 @@ class Swing{
     this.vehicle.specialCleanup();
     this.vehicle.rip();
   }
+  }
   
 }
 class Sport{
@@ -407,7 +421,18 @@ class Sport{
     this.bodylength = 16;
     this.bodywidth = 20;
     this.vehicle = new Car(x,y,lap,Sport,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 10, 16, 0.5, 2.5, this.hbrake, this.unhbrake, "Handbrake","HANDBRAKE!!",300,checkpoint,colourA,colourB,"tan");
-    this.vehicle.bumper = new Sprite(x*big-this.facelength,y*big);
+    if(rotation === 0){
+      this.vehicle.bumper = new Sprite(x*big+this.facelength,y*big);
+    }
+    else if(rotation === 90){
+      this.vehicle.bumper = new Sprite(x*big,y*big+this.facelength);
+    }
+    else if(rotation === 180){
+      this.vehicle.bumper = new Sprite(x*big-this.facelength,y*big);
+    }
+    else if(rotation === 270){
+      this.vehicle.bumper = new Sprite(x*big,y*big-this.facelength);
+    }
     this.vehicle.bumper.d = this.facewidth;
     this.vehicle.bumper.drag = 2.5;
     this.vehicle.bumper.bounciness = 0.8;
@@ -445,6 +470,7 @@ class Sport{
     this.handbrake = false;
   }
   docar(){
+    if(!this.vehicle.finished){
     this.vehicle.spawnCheck();
     this.vehicle.spikeCheck();
     this.vehicle.respawn([this.vehicle.bumper,this.front]);
@@ -458,6 +484,7 @@ class Sport{
       this.bumper.color = "black";
       this.bumper.stroke = "darkgrey";
     }
+  }
   }
 }
 class Delor{
@@ -525,6 +552,7 @@ class Delor{
   }
 
   docar(){
+    if(!this.vehicle.finished){
     this.vehicle.spawnCheck();
     // if(!this.vehicle.phased){
       this.vehicle.spikeCheck();
@@ -536,6 +564,7 @@ class Delor{
     }
     this.vehicle.specialCleanup();
     this.vehicle.rip();
+  }
   }
 
   // display(playerTrue){
@@ -551,11 +580,22 @@ class Rocket{
     this.bodywidth = 19.5;
     this.lap = lap;
     this.vehicle = new Car(x,y,lap,this.type,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 9.5, 11, 1, 2, this.rocket, this.recharge,"Rocket","On Cooldown",200,checkpoint,colourA,colourB,"violet");
+    if(rotation === 0){
+      this.vehicle.bumper = new Sprite(x*big+this.facelength,y*big);
+    }
+    else if(rotation === 90){
+      this.vehicle.bumper = new Sprite(x*big,y*big+this.facelength);
+    }
+    else if(rotation === 180){
+      this.vehicle.bumper = new Sprite(x*big-this.facelength,y*big);
+    }
+    else if(rotation === 270){
+      this.vehicle.bumper = new Sprite(x*big,y*big-this.facelength);
+    }
     
-    this.vehicle.bumper = new Sprite(x*big-this.facelength,y*big);
     this.vehicle.bumper.w = Math.sqrt((this.facewidth+4)**2/2);
     this.vehicle.bumper.h = Math.sqrt((this.facewidth+4)**2/2);
-    this.vehicle.bumper.rotation = 45;
+    this.vehicle.bumper.rotation = 45+rotation;
     this.vehicle.bumper.drag = 1;
     this.vehicle.bumper.bounciness = 0;
     this.vehicle.bumper.color = colourB;
@@ -601,18 +641,20 @@ class Rocket{
     }
   }
   docar(){
-    this.vehicle.spawnCheck();
-    this.vehicle.spikeCheck();
-    this.vehicle.respawn([this.vehicle.bumper,this.front]);
-    this.vehicle.displayUI();
-    if (!this.vehicle.dead){
+    if(!this.vehicle.finished){
+      this.vehicle.spawnCheck();
+      this.vehicle.spikeCheck();
+      this.vehicle.respawn([this.vehicle.bumper,this.front]);
+      this.vehicle.displayUI();
+      if (!this.vehicle.dead){
       this.vehicle.drive();
-    }
-    this.vehicle.specialCleanup();
-    this.vehicle.rip();
-    if (this.vehicle.dead){
+      }
+      this.vehicle.specialCleanup();
+      this.vehicle.rip();
+      if (this.vehicle.dead){
       this.vehicle.bumper.color = "black";
       this.vehicle.bumper.stroke = "darkgrey";
+      }
     }
   }
 
@@ -620,29 +662,45 @@ class Rocket{
 
 class Car{
   constructor(x,y,lap,type,rotation,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2, backText,topText, abilityTime, checkpoint, colourA, colourB, abilitycolour){
-    this.body = new Sprite(x*big+backlength/2,y*big);
+    if(rotation === 0){
+      this.body = new Sprite(x*big-backlength/2,y*big);
+      this.face = new Sprite(x*big+facelength/2,y*big);
+    }
+    else if(rotation === 90){
+      this.body = new Sprite(x*big,y*big-backlength/2);
+      this.face = new Sprite(x*big,y*big+facelength/2);
+    }
+    else if(rotation === 180){
+      this.body = new Sprite(x*big+backlength/2,y*big);
+      this.face = new Sprite(x*big-facelength/2,y*big);
+    }
+    else if(rotation === 270){
+      this.body = new Sprite(x*big,y*big+backlength/2);
+      this.face = new Sprite(x*big,y*big-facelength/2);
+    }
+
+    this.body.rotation = rotation;
     this.body.w = backlength;
     this.body.h = backwidth;
 
     this.body.color = colourA;
     
     everything.push(this.body);
-    this.face = new Sprite(x*big-facelength/2,y*big);
+    
+    this.face.rotation = rotation;
     this.face.w = facelength;
     this.face.h = facewidth;
 
     this.face.color = colourB;
     
     everything.push(this.face);
+
     this.midsec = new GlueJoint(this.body,this.face);
 
     this.colourA = colourA;
     this.colourB = colourB;
     
-  
-    // this.body.rotateTo(rotation,22);
 
-    // this.body.rotation = rotation;
     this.body.drag = 2;
     this.body.rotationDrag = 3;
     this.body.bounciness = 0.8;
@@ -735,6 +793,9 @@ class Car{
           // console.log("NEW LAP");
           if (this.lap > laps){
             finsished.push(this);
+            this.face.remove();
+            this.body.remove();
+            this.finished = true;
           }
         }
       }
@@ -742,15 +803,16 @@ class Car{
   }
 
   displayUI(){
-    this.lapCounter.x = this.face.x-windowWidth/2+(this.lapCounter.w/2+5);
-    this.lapCounter.y = this.face.y-windowHeight/2+(this.lapCounter.h/2+5);
+    let mid = cheese.vehicle.carCenter();
+    this.lapCounter.x = mid.x*big-windowWidth/2+(this.lapCounter.w/2+5);
+    this.lapCounter.y = mid.y*big-windowHeight/2+(this.lapCounter.h/2+5);
     this.lapCounter.text = "Lap:" + this.lap + "/" + laps;
 
     this.abilityBar.update(this.timer);
-    this.abilityBar.display(this.face);
+    this.abilityBar.display(mid);
 
     this.respawnBar.update(this.respawnCommit);
-    this.respawnBar.display(this.face);
+    this.respawnBar.display(mid);
 
     // let avspeed = Math.floor((this.body.speed+this.face.speed)/2*10)/10;
     let avspeed = Math.abs(Math.floor(this.move*10)/10);
@@ -772,7 +834,7 @@ class Car{
       this.speedometer.progress.color = "yellow";
     }
     this.speedometer.progress.text = avspeed;
-    this.speedometer.display(this.face);
+    this.speedometer.display(mid);
   }
 
   drive() {
@@ -793,10 +855,6 @@ class Car{
     }
     
     this.body.applyTorque(this.turn/8);
-    // //special cleanup
-    // if (this.thing2 !== null){
-    //   this.specialCleanup();
-    // }
 
     // gas
     if (keyIsDown(87)){
@@ -815,7 +873,7 @@ class Car{
       this.special();
     }
 
-    this.body.bearing = this.body.rotation-180;
+    this.body.bearing = this.body.rotation;
   
     this.body.applyForce(this.move);
     if (keyIsDown(87)||keyIsDown(32)){
@@ -839,7 +897,7 @@ class Car{
     this.turn = 0;
   }
   respawn(extraRemove){
-    if(keyIsDown(82)){
+    if(keyIsDown(82) || this.dead){
       this.respawnCommit += this.respawnMod;
       if(this.respawnCommit >= respawntime){
         this.respawnCommit = 0;
@@ -949,6 +1007,7 @@ class CheckP{
   constructor(x,y,angle,number,size){
     this.x = x;
     this.y = y;
+    this.rotation = angle;
     this.spot = new Sprite(x*big,y*big);
     if (number !== 0){
       this.spot.radius = size*big;
@@ -985,12 +1044,12 @@ class Bar{
     this.yOffset = yOffset;
     this.inmax = inmax;
   }
-  display(face){
-    this.back.x = face.x-windowWidth/2+(this.back.w/2+this.xOffset);
-    this.back.y = face.y-windowHeight/2+(this.back.h/2+this.yOffset);
+  display(spot){
+    this.back.x = spot.x*big-windowWidth/2+(this.back.w/2+this.xOffset);
+    this.back.y = spot.y*big-windowHeight/2+(this.back.h/2+this.yOffset);
 
-    this.progress.x = face.x-windowWidth/2+(this.progress.w/2+this.xOffset);
-    this.progress.y = face.y-windowHeight/2+(this.progress.h/2+this.yOffset);
+    this.progress.x = spot.x*big-windowWidth/2+(this.progress.w/2+this.xOffset);
+    this.progress.y = spot.y*big-windowHeight/2+(this.progress.h/2+this.yOffset);
   }
   remove(){
     this.back.remove();
@@ -1022,18 +1081,18 @@ function toZero(number){
   return number;
   
 }
-function smallest(){
-  let smoll;
-  let wide = 40;
-  let tall = 70;
-  if (windowHeight/wide < windowWidth/tall){
-    smoll = windowHeight/wide;
-  } 
-  else{
-    smoll = windowWidth/tall;
-  }
-  return smoll;
-}
+// function smallest(){
+//   let smoll;
+//   let wide = 40;
+//   let tall = 70;
+//   if (windowHeight/wide < windowWidth/tall){
+//     smoll = windowHeight/wide;
+//   } 
+//   else{
+//     smoll = windowWidth/tall;
+//   }
+//   return smoll;
+// }
 
 
 function makeTrack(id){
@@ -1043,6 +1102,7 @@ function makeTrack(id){
     let die1,die2,die3;
 
     big = 2.2;
+    laps = 8;
 
     wall1 = new Wall(500,200,1500,20,0);
     wall2 = new Wall(500,500,1500,20,0);
@@ -1059,8 +1119,8 @@ function makeTrack(id){
     die3 = new SpWall(600,207,20,90,"hor");
 
 
-    makecheckP(1100,350, 0, checkpoints, 270);
-    makecheckP(-120,350, 180,checkpoints, 270/2);
+    makecheckP(1100,350, 180, checkpoints, 270);
+    makecheckP(-120,350, 0,checkpoints, 270/2);
 
 
   }
@@ -1106,11 +1166,11 @@ function makeTrack(id){
     south6 = new Bend(703,515,12,10,-15, 1, true);
 
     // finish/start 
-    makecheckP(700,380, 0, checkpoints, 215);
+    makecheckP(700,380, 180, checkpoints, 215);
 
-    makecheckP(110,270, 180, checkpoints,100);
-    makecheckP(850, 180, -90, checkpoints, 65);
-    makecheckP(990, 981, 0, checkpoints, 150);
+    makecheckP(110,270, 270, checkpoints,100);
+    makecheckP(850, 180, 0, checkpoints, 65);
+    makecheckP(990, 981, 180, checkpoints, 150);
   }
   
 }
