@@ -25,7 +25,7 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   // dummy = new Delor(width/3, height/3);
   
-  prepareRace("Int",Bubble,"magenta","lime");
+  prepareRace("BnF",Bur,"magenta","lime");
   
 }
 
@@ -864,9 +864,11 @@ class Car{
     // brake
     if (keyIsDown(32)){
       if (toZero(this.move) === 1){
-        this.move -= toZero(this.move)*this.braking/5;
+        this.move -= toZero(this.move)*this.braking/100;
       }
-      this.move -= this.acceleration/(60);
+      else{
+        this.move -= this.acceleration/(60);
+      }
 
     }
     // special ability
