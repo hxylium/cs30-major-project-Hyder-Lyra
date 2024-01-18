@@ -25,7 +25,7 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   // dummy = new Delor(width/3, height/3);
   
-  prepareRace("BnF",Bur,"magenta","lime");
+  prepareRace("Int",Bur,"magenta","lime");
   
 }
 
@@ -228,8 +228,10 @@ class Bur{
 
       let mid = this.carCenter();
       // console.log(mid);
-      let radius = 21;
-  
+      let radius = 20;
+      this.center = new Sprite(mid.x*big,mid.y*big,1)
+      
+      // this.pokeys[0].mass =
       this.pokeys.push(new Spike(mid.x-1*radius,mid.y+0*radius,180,true).metal);
       this.pokeys.push(new Spike(mid.x-0.71*radius,mid.y-0.71*radius,225,true).metal);
       this.pokeys.push(new Spike(mid.x+0*radius,mid.y-1*radius,270,true).metal);
@@ -239,15 +241,38 @@ class Bur{
       this.pokeys.push(new Spike(mid.x+0*radius,mid.y+1*radius,90,true).metal);
       this.pokeys.push(new Spike(mid.x-0.71*radius,mid.y+0.71*radius,135,true).metal);
       let bones = []
-      for (let spike of this.pokeys){
+      let spike,nspike;
+      let num = 0;
+      for (let number in this.pokeys){
+        // console.log(number);
+        spike = this.pokeys[number];
+        if(num === this.pokeys.length-2){
+          nspike = this.pokeys[0];
+          // console.log('spiky last');
+        }
+        else if(num === 0){
+          nspike = this.pokeys[this.pokeys.length-1];
+          // console.log("spiky 0");
+        }
+        else{
+          nspike = this.pokeys[number-1];
+          // console.log("spiky")
+        }
+        // console.log(nspike)
         // spike.metal.color = this.body.color;
         spike.color = 'pink';
-        bones.push(new GlueJoint(this.face,spike));
-        bones.push(new DistanceJoint(this.body,spike));
+        bones.push(new DistanceJoint(center,spike));
+        bones.push(new GlueJoint(spike,nspike));
+        // bones.push(new DistanceJoint(this.body,spike));
+        num ++;
       }
+      this.pokeys.push(this.center);
+      this.pokeys.push(new GlueJoint(this.center,this.face));
+      this.pokeys.push(new GlueJoint(this.center,this.body));
       for (let item of bones){
         this.pokeys.push(item);
       }
+      
       this.puffed = true;
     }
     // warning system
@@ -256,6 +281,9 @@ class Bur{
       this.abilityBar.progress.color = 'pink';
       this.face.stroke = 'pink';
       this.body.stroke = 'pink';
+      // this.pokeys[0].bearing = this.pokeys[0].rotation+90;
+      // this.pokeys[0].applyForce(10**1);
+      this.center.applyTorque(1);
       
       let danger = 0;
 
@@ -979,12 +1007,14 @@ class Spike{
   constructor(x,y,rotation,puff){
     let thing = 20;
     let thang = 6;
-    let mode;
+    let mode,boing;
     if (puff){
       mode = 'dynamic';
+      boing = 5;
     }
     else{
       mode = 'static';
+      boing = 0;
     }
     this.metal = new Sprite(x*big,y*big, [
       [thing*big, thang*big],
@@ -993,6 +1023,7 @@ class Spike{
     ],mode);
     this.metal.mass = 0;
     this.metal.drag = -1;
+    this.metal.bounciness = boing;
     
     this.metal.rotation = rotation;
     this.metal.layer = 0.2
@@ -1051,6 +1082,7 @@ class startMark{
     this.square = new Sprite(x*big,y*big,0,40);
     this.square.collider = "none";
     this.square.stroke = "white";
+    this.square.layer = 0.2;
     
     this.square.rotation = rotation;
   }
