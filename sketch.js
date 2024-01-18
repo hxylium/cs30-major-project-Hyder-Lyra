@@ -25,7 +25,7 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   // dummy = new Delor(width/3, height/3);
   
-  prepareRace("Int",Bur,"magenta","lime");
+  prepareRace("Int",Saw,"magenta","lime");
   
 }
 
@@ -184,14 +184,14 @@ class Bubble{
   }
   
 }
-class Bur{
+class Saw{
   constructor(x,y,lap,rotation,checkpoint,colourA,colourB){
-    this.type = Bur;
+    this.type = Saw;
     this.facelength = 9;
     this.facewidth = 18;
     this.bodylength = 12;
     this.bodywidth = 18;
-    this.vehicle = new Car(x,y,lap,Bur,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 7.0, 8.5, 3, 1.0, this.puff, this.unpuff,"Pufferfish","SPIKE!!",300,checkpoint,colourA,colourB,"pink");
+    this.vehicle = new Car(x,y,lap,Saw,rotation,this.facelength,this.facewidth,this.bodylength,this.bodywidth, 7.0, 8.5, 3, 1.0, this.puff, this.unpuff,"Pufferfish","SPIKE!!",500,checkpoint,colourA,colourB,"pink");
     this.vehicle.face.mass = 0.5;
     this.vehicle.body.mass = 0.5;
     this.vehicle.face.drag = 1.5;
@@ -203,12 +203,13 @@ class Bur{
     this.vehicle.pokeys = [];
 
     this.vehicle.abilityStart = 60;
-    this.vehicle.selfDestruct = 0;
+    this.vehicle.cooldown = false;
   }
   
   puff(){
     // delay system
-    if (this.timer === 0){
+    if(!this.cooldown){
+    if (this.timer === 0 && !this.puffed){
       this.timer = this.time - this.abilityStart;
       this.abilityBar.topText = "ready...";
       this.abilityBar.progress.color = 'yellow';
@@ -261,19 +262,21 @@ class Bur{
         // console.log(nspike)
         // spike.metal.color = this.body.color;
         spike.color = 'pink';
-        bones.push(new DistanceJoint(center,spike));
+        bones.push(new GlueJoint(this.center,spike));
         bones.push(new GlueJoint(spike,nspike));
+        // bones[num].springiness = 0.2;
         // bones.push(new DistanceJoint(this.body,spike));
         num ++;
       }
       this.pokeys.push(this.center);
-      this.pokeys.push(new GlueJoint(this.center,this.face));
-      this.pokeys.push(new GlueJoint(this.center,this.body));
+      this.pokeys.push(new DistanceJoint(this.center,this.face));
+      this.pokeys.push(new DistanceJoint(this.center,this.body));
       for (let item of bones){
         this.pokeys.push(item);
       }
       
       this.puffed = true;
+      this.timer = 0;
     }
     // warning system
     if (this.puffed){
@@ -281,23 +284,22 @@ class Bur{
       this.abilityBar.progress.color = 'pink';
       this.face.stroke = 'pink';
       this.body.stroke = 'pink';
+
       // this.pokeys[0].bearing = this.pokeys[0].rotation+90;
       // this.pokeys[0].applyForce(10**1);
-      this.center.applyTorque(1);
-      
-      let danger = 0;
+      this.center.applyTorque(5*10**-2);
+      // let danger = this.center.rotationSpeed;
 
-      for (let spike of this.pokeys){
-        danger += spike.speed;
-      }
+      // let danger = 0;
 
-      danger = danger/8 -this.face.speed;
+      // for (let spike of this.pokeys){
+      //   danger += spike.speed;
+      // }
 
-      if (danger >= 1.0){
-        if (this.timer === this.time){
-          this.timer = this.time-151;
-        }
-        this.timer += 2;
+      // danger = danger/8 -this.face.speed;
+      this.timer ++;
+
+      if (this.timer >= this.time/3){
         this.abilityBar.topText = "WARNING";
         this.abilityBar.progress.color = "orange";
 
@@ -309,19 +311,26 @@ class Bur{
         }
       }
       
-      if (danger >= 10){
+      if (this.timer >= this.time*2/3){
         this.abilityBar.topText = "DANGER";
         // flashing colours for late in the danger levels
         let colour = "red";
-        let interval = 9;
+        let interval = 10;
+        
         if (this.timer >=this.time){
+          // if (this.interval === 0){
+          //   this.interval = interval;
+           
+          // }
+          
+          // this.interval --;
           if (this.timer/interval === Math.floor(this.timer/interval)){
             if (this.abilityBar.progress.color === "yellow"){
               colour = "red";
             }
             else {
               colour = "yellow";
-
+  
             }
           }
         }
@@ -334,16 +343,17 @@ class Bur{
         for (let spike of this.pokeys){
           spike.color = colour;
         }
-        this.selfDestruct ++;
-        if (this.selfDestruct >= 150){
+        // this.selfDestruct ++;
+        if (this.timer >= this.time + 150){
           this.die();
         }
       }
       
     }
+    }
   }
   unpuff(){
-    if (!keyIsDown(16) && this.timer > 0 || this.dead){
+    if (!keyIsDown(16) && this.timer > 0 && !this.cooldown|| this.dead){
 
       this.face.stroke = 'black';
       this.body.stroke = 'black';
@@ -354,9 +364,21 @@ class Bur{
         }
       }
       this.pokeys = [];
-      this.selfDestruct = 0;
-      this.timer = 0;
-      this.puffed = false;
+      if(this.puffed){
+        this.puffed = false;
+        this.cooldown = true;
+        this.timer = this.time;
+      }
+      this.abilityBar.progress.color = "pink";
+      this.abilityBar.topText = "On Cooldown";
+    }
+    if (this.cooldown){
+      this.timer -= 1.5;
+      console.log(this.cooldown);
+      if(this.timer <= 0){
+        this.timer = 0;
+        this.cooldown = false;
+      }
     }
     
   }
