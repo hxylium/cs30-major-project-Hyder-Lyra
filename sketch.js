@@ -25,7 +25,7 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   // dummy = new Delor(width/3, height/3);
   
-  prepareRace("Int",Saw,"magenta","lime");
+  prepareRace("BnF",Saw,"magenta","lime");
   
 }
 
@@ -368,6 +368,9 @@ class Saw{
         this.puffed = false;
         this.cooldown = true;
         this.timer = this.time;
+      }
+      else{
+        this.timer = 0;
       }
       this.abilityBar.progress.color = "pink";
       this.abilityBar.topText = "On Cooldown";
