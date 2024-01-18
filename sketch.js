@@ -37,6 +37,7 @@ function setup() {
   ratio = ratio/20;
   
   cheese = makeVehicle(700,380,1,0,Bubble,0,"magenta","darkgrey")
+  my.beep = new DisplayCar(20,12,12,12);
 
   camera.pos = cheese.vehicle.face.pos;
   // dummy = new Delor(width/3, height/3);
@@ -92,6 +93,7 @@ function draw() {
   background("lightgrey")
   
   cheese.docar();
+  my.beep.update(cheese.vehicle.face.x,cheese.vehicle.face.y,cheese.vehicle.face.rotation,cheese.vehicle.body.x,cheese.vehicle.body.y,cheese.vehicle.body.rotation);
 
   camera.pos = cheese.vehicle.face.pos;
 }
@@ -118,6 +120,21 @@ function makeVehicle(x,y,lap,rotation,type,checkpoint,colourA,colourB){
   beep.self = beep;
   console.log(beep);
   return beep;
+}
+
+class DisplayCar{
+  constructor(facewidth,facelength,bodywidth,bodylength){
+    this.body = new Sprite(0,0,bodylength,bodywidth);
+    this.face = new Sprite(0,0,facelength,facewidth);
+  }
+  update(facex,facey,facer,bodyx,bodyy,bodyr){
+    this.body.x =bodyx;
+    this.body.y = bodyy;
+    this.body.rotation = bodyr;
+    this.face.x = facex;
+    this.face.y = facey;
+    this.face.rotation = facer;
+  }
 }
 
 class Bubble{
