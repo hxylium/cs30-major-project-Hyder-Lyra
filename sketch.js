@@ -16,6 +16,7 @@ let respawntime = 150;
 
 
 let checkpoints = [];
+let starts = [];
 
 let players = [];
 
@@ -24,7 +25,7 @@ function setup() {
   createCanvas(windowWidth, windowHeight);
   // dummy = new Delor(width/3, height/3);
   
-  prepareRace("BnF",Rocket,"magenta","lime");
+  prepareRace("Int",Bubble,"magenta","lime");
   
 }
 
@@ -44,7 +45,7 @@ function draw() {
 
 function prepareRace(race,carType,colourA,colourB){
   makeTrack(race);
-  cheese = makeVehicle(checkpoints[0].x,checkpoints[0].y,1,checkpoints[0].rotation,carType,0,colourA,colourB);
+  cheese = makeVehicle(starts[0].x,starts[0].y,1,starts[0].rotation,carType,0,colourA,colourB);
   players.push(cheese);
 }
 
@@ -1023,6 +1024,35 @@ class CheckP{
     this.number = number;
   }
 }
+function makeSM(x,y,angle,list){
+  list.push(new startMark(x,y,angle));
+}
+class startMark{
+  constructor(x,y,rotation){
+    this.x = x ;
+    this.y = y;
+    let spacing = 15;
+    if (rotation === 0){
+      this.x = x-spacing;
+    }
+    else if(rotation === 90){
+      this.y = y-spacing;
+    }
+    else if(rotation === 180){
+      this.x = x+spacing;
+    }
+    else if(rotation === 270){
+      this.y = y+spacing;
+    }
+    
+    this.rotation = rotation;
+    this.square = new Sprite(x*big,y*big,0,40);
+    this.square.collider = "none";
+    this.square.stroke = "white";
+    
+    this.square.rotation = rotation;
+  }
+}
 
 class Bar{
   constructor(width,height,xOffset,yOffset,colour,backText,topText,inmax){
@@ -1118,13 +1148,16 @@ function makeTrack(id){
     die2 = new SpWall(230,330,5,0,"vert");
     die3 = new SpWall(600,207,20,90,"hor");
 
+    makeSM(1160, 320, 180,starts);
+    makeSM(1140, 360, 180,starts);
+    makeSM(1160, 400, 180,starts);
 
     makecheckP(1100,350, 180, checkpoints, 270);
     makecheckP(-120,350, 0,checkpoints, 270/2);
 
 
   }
-  if (id === "Intestine"){
+  else if (id === "Int"){
     // map
     let divider1,divider2,divider3,divider4,eastwall1,westwall1,eastwall2,westwall2,eastwall3;
     let south1, south2, south3, south4, south5, south6;
@@ -1164,6 +1197,10 @@ function makeTrack(id){
     divider4 = new Wall(760, 820, 15, 300,0);
 
     south6 = new Bend(703,515,12,10,-15, 1, true);
+
+    makeSM(730,330, 180, starts);
+    makeSM(725,380, 180, starts);
+    makeSM(720,430, 180, starts);
 
     // finish/start 
     makecheckP(700,380, 180, checkpoints, 215);
