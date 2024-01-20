@@ -1,45 +1,154 @@
-
-
-
-
 let cheese;
 let dummy;
 let ratio;
+
 let everything = [];
 let spikes = [];
 let laps = 3;
-
 let finsished = [];
-
-
 let respawntime = 150;
-
-
 let checkpoints = [];
 let starts = [];
-
 let players = [];
 
+let back;
+let loading;
+let play;
+let cars;
+let tutorial;
+let choice;
+let gameState = "Initialize";
+let bubble, saw, swing, sport, delor, rocket;
+
+function preload(){
+  back = loadImage("Background image.png");
+  loading = loadImage("loading.jpeg");
+}
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  // dummy = new Delor(width/3, height/3);
+  initialization();
+}
+
+function initialization(){
+  preload();
+
+  // gameState = "loading";
+
+  play = createButton("Play (With a default car)");
+  play.position(width/2-(width/6)/2, height/3);
+  play.size(width/6, 60);
+  play.style("background-color", "blue");
+
+  cars = createButton("Choose a Car");
+  cars.position(width/2-(width/6)/2, height-height/2);
+  cars.size(width/6, 60);
+  cars.style("background-color", "green");
+
+  tutorial = createButton("Learn how to play");
+  tutorial.position(width/2-(width/6)/2, height-height/3);
+  tutorial.size(width/6, 60);
+  tutorial.style("background-color", "red");
+
+
+
+  bubble = createButton("Bubble Van");
+  bubble.position(50, height/3);
+  bubble.size(200, 60);
+
+  saw = createButton("Saw Car");
+  saw.position(300, height/3);
+  saw.size(200, 60);
   
-  prepareRace("BnF",Bubble,"magenta","lime");
-  
+  swing = createButton("Swinging Car");
+  swing.position(550, height/3);
+  swing.size(200, 60);
+
+  sport = createButton("Sports Car");
+  sport.position(800, height/3);
+  sport.size(200, 60);
+
+  delor = createButton("Delor Car");
+  delor.position(1050, height/3);
+  delor.size(200, 60);
+
+  rocket = createButton("Rocket Car");
+  rocket.position(1300, height/3);
+  rocket.size(200, 60);
+
+
+  play.hide();
+  cars.hide();
+  tutorial.hide();
+
+  // bubble.hide();
+  // saw.hide();
+  // swing.hide();
+  // sport.hide();
+  // delor.hide();
+  // rocket.hide();
+}
+
+function choosingCars(){
+  text("Speciality: Creates a bouncy field around you", 56, height/3+80, width/6-60, height/3+80);
+  text("Speciality: Become a saw", 306, height/3+80, width/6-56, height/3+80);
+  text("Speciality: Grapple onto things", 556, height/3+80, width/6+60, height/3+80);
+  text("Speciality: Handbrake and quick respawn", 806, height/3+80, width/6-60, height/3+80);
+  text("Speciality: Ghost mode", 1056, height/3+80, width/6-100, height/3+80);
+  text("Speciality: Dash forward with tremendous speed", 1306, height/3+80, width/6-29, height/3+80);
+
+  text("Acceleration: 9.5", 56, height/3+120, width/6-60, height/3+80);
+  text("Acceleration: 7", 306, height/3+120, width/6-56, height/3+80);
+  text("Acceleration: 7.5", 556, height/3+120, width/6+60, height/3+80);
+  text("Acceleration: 10", 806, height/3+120, width/6-60, height/3+80);
+  text("Acceleration: 9.5", 1056, height/3+120, width/6-100, height/3+80);
+  text("Acceleration: 9.5", 1306, height/3+120, width/6-29, height/3+80);
+
+  text("Max Speed: 10.5", 56, height/3+140, width/6-60, height/3+80);
+  text("Max Speed: 8.5", 306, height/3+140, width/6-56, height/3+80);
+  text("Max Speed: 11.5", 556, height/3+140, width/6+60, height/3+80);
+  text("Max Speed: 16", 806, height/3+140, width/6-60, height/3+80);
+  text("Max Speed: 11.5", 1056, height/3+140, width/6-100, height/3+80);
+  text("Max Speed: 11", 1306, height/3+140, width/6-29, height/3+80);
+
+  text("Braking: 3", 56, height/3+160, width/6-60, height/3+80);
+  text("Braking: 3", 306, height/3+160, width/6-56, height/3+80);
+  text("Braking: 3", 556, height/3+160, width/6+60, height/3+80);
+  text("Braking: 6.5", 806, height/3+160, width/6-60, height/3+80);
+  text("Braking: 4.5", 1056, height/3+160, width/6-100, height/3+80);
+  text("Braking: 1", 1306, height/3+160, width/6-29, height/3+80);
+
+  text("Handling: 1", 56, height/3+180, width/6-60, height/3+80);
+  text("Handling: 1", 306, height/3+180, width/6-56, height/3+80);
+  text("Handling: 1.4", 556, height/3+180, width/6+60, height/3+80);
+  text("Handling: 2.5", 806, height/3+180, width/6-60, height/3+80);
+  text("Handling: 2.3", 1056, height/3+180, width/6-100, height/3+80);
+  text("Handling: 2", 1306, height/3+180, width/6-29, height/3+80);
+
+
 }
 
 
 function draw() {
-  createCanvas(windowWidth, windowHeight);
-  clear();
-  background("lightgrey")
+  if(gameState !== "Initialize"){
+    prepareRace("BnF",Bubble,"magenta","lime");
+    createCanvas(windowWidth, windowHeight);
+    clear();
+    background("lightgrey");
+    
+    cheese.docar();
   
-  cheese.docar();
-
-  let mid = cheese.vehicle.carCenter();
-  camera.x = mid.x*big;
-  camera.y = mid.y*big;
+    let mid = cheese.vehicle.carCenter();
+    camera.x = mid.x*big;
+    camera.y = mid.y*big;
+  }
+  else if(gameState === "Initialize"){
+    // image(loading, 0, 0, width, height+100);
+    choosingCars();
+  }
+  else{
+    startGame();
+  }
 }
 
 
@@ -96,8 +205,8 @@ class Bubble{
     if (!this.shielded && this.timer <= 0){
 
       this.timer = this.time;
-      this.face.stroke = 'turquoise';
-      this.body.stroke = 'turquoise';
+      this.face.stroke = "turquoise";
+      this.body.stroke = "turquoise";
       this.shielded = true;
 
       let mid = this.carCenter();
@@ -133,16 +242,16 @@ class Bubble{
           
         }
         else if (this.move > -1.6 && keyIsDown(32)){
-            this.move = -1.6
-          }
+          this.move = -1.6;
         }
+      }
 
       if(this.timer <= 0){
         this.shielded = false;
       }
       else if (this.timer <= 100 || this.dead){
-        this.face.stroke = 'black';
-        this.body.stroke = 'black';
+        this.face.stroke = "black";
+        this.body.stroke = "black";
 
         this.shield.remove();
         this.handle.remove();
@@ -166,22 +275,22 @@ class Bubble{
 
   docar(){
     if(!this.vehicle.finished){
-    this.vehicle.spawnCheck();
-    if (!this.vehicle.shielded || this.vehicle.shield.radius < 31){
-      this.vehicle.spikeCheck();
+      this.vehicle.spawnCheck();
+      if (!this.vehicle.shielded || this.vehicle.shield.radius < 31){
+        this.vehicle.spikeCheck();
+      }
+      let list = [];
+      if (this.vehicle.shielded){
+        list = [this.vehicle.shield,this.vehicle.handle];
+      }
+      this.vehicle.respawn(list);
+      this.vehicle.displayUI();
+      if (!this.vehicle.dead){
+        this.vehicle.drive();
+      }
+      this.vehicle.specialCleanup();
+      this.vehicle.rip();
     }
-    let list = [];
-    if (this.vehicle.shielded){
-      list = [this.vehicle.shield,this.vehicle.handle];
-    }
-    this.vehicle.respawn(list);
-    this.vehicle.displayUI();
-    if (!this.vehicle.dead){
-      this.vehicle.drive();
-    }
-    this.vehicle.specialCleanup();
-    this.vehicle.rip();
-  }
   }
   
 }
@@ -210,154 +319,154 @@ class Saw{
   puff(){
     // delay system
     if(!this.cooldown){
-    if (this.timer === 0 && !this.puffed){
-      this.timer = this.time - this.abilityStart;
-      this.abilityBar.topText = "ready...";
-      this.abilityBar.progress.color = 'yellow';
-      this.face.stroke = 'yellow';
-      this.body.stroke = 'yellow';
-    }
-    else if(this.timer < this.time && !this.puffed){
-      this.timer ++;
-    }
-    // make spikes
-    if (!this.puffed && this.timer === this.time && this.timer !== 0){
+      if (this.timer === 0 && !this.puffed){
+        this.timer = this.time - this.abilityStart;
+        this.abilityBar.topText = "ready...";
+        this.abilityBar.progress.color = "yellow";
+        this.face.stroke = "yellow";
+        this.body.stroke = "yellow";
+      }
+      else if(this.timer < this.time && !this.puffed){
+        this.timer ++;
+      }
+      // make spikes
+      if (!this.puffed && this.timer === this.time && this.timer !== 0){
 
-      this.abilityBar.topText = "Spiked!";
-      this.abilityBar.progress.color = 'pink';
-      this.face.stroke = 'pink';
-      this.body.stroke = 'pink';
+        this.abilityBar.topText = "Spiked!";
+        this.abilityBar.progress.color = "pink";
+        this.face.stroke = "pink";
+        this.body.stroke = "pink";
 
-      let mid = this.carCenter();
-      // console.log(mid);
-      let radius = 20;
-      this.center = new Sprite(mid.x*big,mid.y*big,1)
+        let mid = this.carCenter();
+        // console.log(mid);
+        let radius = 20;
+        this.center = new Sprite(mid.x*big,mid.y*big,1);
       
-      // this.pokeys[0].mass =
-      this.pokeys.push(new Spike(mid.x-1*radius,mid.y+0*radius,180,true).metal);
-      this.pokeys.push(new Spike(mid.x-0.71*radius,mid.y-0.71*radius,225,true).metal);
-      this.pokeys.push(new Spike(mid.x+0*radius,mid.y-1*radius,270,true).metal);
-      this.pokeys.push(new Spike(mid.x+0.71*radius,mid.y-0.71*radius,315,true).metal);
-      this.pokeys.push(new Spike(mid.x+1*radius,mid.y+0*radius,0,true).metal);
-      this.pokeys.push(new Spike(mid.x+0.71*radius,mid.y+0.71*radius,45,true).metal);
-      this.pokeys.push(new Spike(mid.x+0*radius,mid.y+1*radius,90,true).metal);
-      this.pokeys.push(new Spike(mid.x-0.71*radius,mid.y+0.71*radius,135,true).metal);
-      let bones = []
-      let spike,nspike;
-      let num = 0;
-      for (let number in this.pokeys){
+        // this.pokeys[0].mass =
+        this.pokeys.push(new Spike(mid.x-1*radius,mid.y+0*radius,180,true).metal);
+        this.pokeys.push(new Spike(mid.x-0.71*radius,mid.y-0.71*radius,225,true).metal);
+        this.pokeys.push(new Spike(mid.x+0*radius,mid.y-1*radius,270,true).metal);
+        this.pokeys.push(new Spike(mid.x+0.71*radius,mid.y-0.71*radius,315,true).metal);
+        this.pokeys.push(new Spike(mid.x+1*radius,mid.y+0*radius,0,true).metal);
+        this.pokeys.push(new Spike(mid.x+0.71*radius,mid.y+0.71*radius,45,true).metal);
+        this.pokeys.push(new Spike(mid.x+0*radius,mid.y+1*radius,90,true).metal);
+        this.pokeys.push(new Spike(mid.x-0.71*radius,mid.y+0.71*radius,135,true).metal);
+        let bones = [];
+        let spike,nspike;
+        let num = 0;
+        for (let number in this.pokeys){
         // console.log(number);
-        spike = this.pokeys[number];
-        if(num === this.pokeys.length-2){
-          nspike = this.pokeys[0];
+          spike = this.pokeys[number];
+          if(num === this.pokeys.length-2){
+            nspike = this.pokeys[0];
           // console.log('spiky last');
-        }
-        else if(num === 0){
-          nspike = this.pokeys[this.pokeys.length-1];
+          }
+          else if(num === 0){
+            nspike = this.pokeys[this.pokeys.length-1];
           // console.log("spiky 0");
-        }
-        else{
-          nspike = this.pokeys[number-1];
+          }
+          else{
+            nspike = this.pokeys[number-1];
           // console.log("spiky")
+          }
+          // console.log(nspike)
+          // spike.metal.color = this.body.color;
+          spike.color = "pink";
+          bones.push(new GlueJoint(this.center,spike));
+          bones.push(new GlueJoint(spike,nspike));
+          // bones[num].springiness = 0.2;
+          // bones.push(new DistanceJoint(this.body,spike));
+          num ++;
         }
-        // console.log(nspike)
-        // spike.metal.color = this.body.color;
-        spike.color = 'pink';
-        bones.push(new GlueJoint(this.center,spike));
-        bones.push(new GlueJoint(spike,nspike));
-        // bones[num].springiness = 0.2;
-        // bones.push(new DistanceJoint(this.body,spike));
-        num ++;
-      }
-      this.pokeys.push(this.center);
-      this.pokeys.push(new DistanceJoint(this.center,this.face));
-      this.pokeys.push(new DistanceJoint(this.center,this.body));
-      for (let item of bones){
-        this.pokeys.push(item);
-      }
-      
-      this.puffed = true;
-      this.timer = 0;
-    }
-    // warning system
-    if (this.puffed){
-      this.abilityBar.topText = "Spiked!";
-      this.abilityBar.progress.color = 'pink';
-      this.face.stroke = 'pink';
-      this.body.stroke = 'pink';
-
-      // this.pokeys[0].bearing = this.pokeys[0].rotation+90;
-      // this.pokeys[0].applyForce(10**1);
-      this.center.applyTorque(5*10**-2);
-      // let danger = this.center.rotationSpeed;
-
-      // let danger = 0;
-
-      // for (let spike of this.pokeys){
-      //   danger += spike.speed;
-      // }
-
-      // danger = danger/8 -this.face.speed;
-      this.timer ++;
-
-      if (this.timer >= this.time/3){
-        this.abilityBar.topText = "WARNING";
-        this.abilityBar.progress.color = "orange";
-
-        this.face.stroke = "orange";
-        this.body.stroke = "orange";
-
-        for (let spike of this.pokeys){
-          spike.color = "orange";
+        this.pokeys.push(this.center);
+        this.pokeys.push(new DistanceJoint(this.center,this.face));
+        this.pokeys.push(new DistanceJoint(this.center,this.body));
+        for (let item of bones){
+          this.pokeys.push(item);
         }
-      }
       
-      if (this.timer >= this.time*2/3){
-        this.abilityBar.topText = "DANGER";
-        // flashing colours for late in the danger levels
-        let colour = "red";
-        let interval = 10;
+        this.puffed = true;
+        this.timer = 0;
+      }
+      // warning system
+      if (this.puffed){
+        this.abilityBar.topText = "Spiked!";
+        this.abilityBar.progress.color = "pink";
+        this.face.stroke = "pink";
+        this.body.stroke = "pink";
+
+        // this.pokeys[0].bearing = this.pokeys[0].rotation+90;
+        // this.pokeys[0].applyForce(10**1);
+        this.center.applyTorque(5*10**-2);
+        // let danger = this.center.rotationSpeed;
+
+        // let danger = 0;
+
+        // for (let spike of this.pokeys){
+        //   danger += spike.speed;
+        // }
+
+        // danger = danger/8 -this.face.speed;
+        this.timer ++;
+
+        if (this.timer >= this.time/3){
+          this.abilityBar.topText = "WARNING";
+          this.abilityBar.progress.color = "orange";
+
+          this.face.stroke = "orange";
+          this.body.stroke = "orange";
+
+          for (let spike of this.pokeys){
+            spike.color = "orange";
+          }
+        }
+      
+        if (this.timer >= this.time*2/3){
+          this.abilityBar.topText = "DANGER";
+          // flashing colours for late in the danger levels
+          let colour = "red";
+          let interval = 10;
         
-        if (this.timer >=this.time){
+          if (this.timer >=this.time){
           // if (this.interval === 0){
           //   this.interval = interval;
            
-          // }
+            // }
           
-          // this.interval --;
-          if (this.timer/interval === Math.floor(this.timer/interval)){
-            if (this.abilityBar.progress.color === "yellow"){
-              colour = "red";
-            }
-            else {
-              colour = "yellow";
+            // this.interval --;
+            if (this.timer/interval === Math.floor(this.timer/interval)){
+              if (this.abilityBar.progress.color === "yellow"){
+                colour = "red";
+              }
+              else {
+                colour = "yellow";
   
+              }
             }
           }
-        }
 
-        this.abilityBar.progress.color = colour;
+          this.abilityBar.progress.color = colour;
 
-        this.face.stroke = colour;
-        this.body.stroke = colour;
+          this.face.stroke = colour;
+          this.body.stroke = colour;
 
-        for (let spike of this.pokeys){
-          spike.color = colour;
+          for (let spike of this.pokeys){
+            spike.color = colour;
+          }
+          // this.selfDestruct ++;
+          if (this.timer >= this.time + 150){
+            this.die();
+          }
         }
-        // this.selfDestruct ++;
-        if (this.timer >= this.time + 150){
-          this.die();
-        }
-      }
       
-    }
+      }
     }
   }
   unpuff(){
     if (!keyIsDown(16) && this.timer > 0 && !this.cooldown|| this.dead){
 
-      this.face.stroke = 'black';
-      this.body.stroke = 'black';
+      this.face.stroke = "black";
+      this.body.stroke = "black";
 
       if (this.puffed){
         for (let spike of this.pokeys){
@@ -390,16 +499,16 @@ class Saw{
 
   docar(){
     if(!this.vehicle.finished){
-    this.vehicle.spawnCheck();
-    this.vehicle.spikeCheck();
-    this.vehicle.respawn(this.vehicle.pokeys);
-    this.vehicle.displayUI();
-    if (!this.vehicle.dead){
-      this.vehicle.drive();
+      this.vehicle.spawnCheck();
+      this.vehicle.spikeCheck();
+      this.vehicle.respawn(this.vehicle.pokeys);
+      this.vehicle.displayUI();
+      if (!this.vehicle.dead){
+        this.vehicle.drive();
+      }
+      this.vehicle.specialCleanup();
+      this.vehicle.rip();
     }
-    this.vehicle.specialCleanup();
-    this.vehicle.rip();
-  }
   }
   
 }
@@ -419,7 +528,7 @@ class Swing{
   grapple(){
     if (!this.grappled){
       this.hook = new Sprite(mouse.x,mouse.y,0);
-      this.hook.collider ='k';
+      this.hook.collider ="k";
       // for (let item of everything){
       //   this.hook.overlaps(item);
       // }
@@ -451,20 +560,20 @@ class Swing{
 
   docar(){
     if(!this.vehicle.finished){
-    this.vehicle.spawnCheck();
-    this.vehicle.spikeCheck();
-    let list = [];
-    if (this.vehicle.grappled){
-      list = [this.vehicle.towlineA, this.vehicle.towlineB,this.vehicle.hook];
+      this.vehicle.spawnCheck();
+      this.vehicle.spikeCheck();
+      let list = [];
+      if (this.vehicle.grappled){
+        list = [this.vehicle.towlineA, this.vehicle.towlineB,this.vehicle.hook];
+      }
+      this.vehicle.respawn(list);
+      this.vehicle.displayUI();
+      if (!this.vehicle.dead){
+        this.vehicle.drive();
+      }
+      this.vehicle.specialCleanup();
+      this.vehicle.rip();
     }
-    this.vehicle.respawn(list);
-    this.vehicle.displayUI();
-    if (!this.vehicle.dead){
-      this.vehicle.drive();
-    }
-    this.vehicle.specialCleanup();
-    this.vehicle.rip();
-  }
   }
   
 }
@@ -492,7 +601,7 @@ class Sport{
     this.vehicle.bumper.drag = 2.5;
     this.vehicle.bumper.bounciness = 0.8;
     this.vehicle.bumper.color = colourB;
-    this.vehicle.bumper.layer = 0.5
+    this.vehicle.bumper.layer = 0.5;
     everything.push(this.vehicle.bumper);
 
     this.front = new GlueJoint(this.vehicle.bumper,this.vehicle.face);
@@ -526,20 +635,20 @@ class Sport{
   }
   docar(){
     if(!this.vehicle.finished){
-    this.vehicle.spawnCheck();
-    this.vehicle.spikeCheck();
-    this.vehicle.respawn([this.vehicle.bumper,this.front]);
-    this.vehicle.displayUI();
-    if (!this.vehicle.dead){
-      this.vehicle.drive();
+      this.vehicle.spawnCheck();
+      this.vehicle.spikeCheck();
+      this.vehicle.respawn([this.vehicle.bumper,this.front]);
+      this.vehicle.displayUI();
+      if (!this.vehicle.dead){
+        this.vehicle.drive();
+      }
+      this.vehicle.specialCleanup();
+      this.vehicle.rip();
+      if (this.vehicle.dead){
+        this.vehicle.bumper.color = "black";
+        this.vehicle.bumper.stroke = "darkgrey";
+      }
     }
-    this.vehicle.specialCleanup();
-    this.vehicle.rip();
-    if (this.vehicle.dead){
-      this.vehicle.bumper.color = "black";
-      this.vehicle.bumper.stroke = "darkgrey";
-    }
-  }
   }
 }
 class Delor{
@@ -562,15 +671,15 @@ class Delor{
 
   blink(){
     if (!this.phased && this.timer <= 0){
-        this.phased = true;
-        this.timer = 350;
-        this.body.stroke = 'gold';
-        this.face.stroke = 'gold';
-        this.body.collider = "none";
-        this.face.collider = "none";
-        this.abilityBar.topText = "Blinked";
-        this.abilityBar.progress.color = "gold";
-        // console.log("blinked");
+      this.phased = true;
+      this.timer = 350;
+      this.body.stroke = "gold";
+      this.face.stroke = "gold";
+      this.body.collider = "none";
+      this.face.collider = "none";
+      this.abilityBar.topText = "Blinked";
+      this.abilityBar.progress.color = "gold";
+      // console.log("blinked");
     }
   }
   recharge(){
@@ -578,22 +687,22 @@ class Delor{
       this.timer --;
       if (this.timer <= this.time-this.abilityStop){
         this.phased = false;
-        this.body.stroke = 'black';
-        this.face.stroke = 'black';
+        this.body.stroke = "black";
+        this.face.stroke = "black";
         this.abilityBar.topText = "UNBLINKED";
-        this.abilityBar.progress.color = 'red';
+        this.abilityBar.progress.color = "red";
         this.body.collider = "d";
         this.face.collider = "d";
       }
       else if (this.timer <= this.time-this.abilityStop+40){
         this.abilityBar.progress.color = "darkorange";     
-        this.body.stroke = 'darkorange';
-        this.face.stroke = 'darkorange';
+        this.body.stroke = "darkorange";
+        this.face.stroke = "darkorange";
       }
       else if (this.timer <= this.time-this.abilityStop+70){
         this.abilityBar.progress.color = "orange";
-        this.body.stroke = 'orange';
-        this.face.stroke = 'orange';
+        this.body.stroke = "orange";
+        this.face.stroke = "orange";
       }
     }
     else{
@@ -608,18 +717,18 @@ class Delor{
 
   docar(){
     if(!this.vehicle.finished){
-    this.vehicle.spawnCheck();
-    // if(!this.vehicle.phased){
+      this.vehicle.spawnCheck();
+      // if(!this.vehicle.phased){
       this.vehicle.spikeCheck();
-    // }
-    this.vehicle.respawn([]);
-    this.vehicle.displayUI();
-    if (!this.vehicle.dead){
-      this.vehicle.drive();
+      // }
+      this.vehicle.respawn([]);
+      this.vehicle.displayUI();
+      if (!this.vehicle.dead){
+        this.vehicle.drive();
+      }
+      this.vehicle.specialCleanup();
+      this.vehicle.rip();
     }
-    this.vehicle.specialCleanup();
-    this.vehicle.rip();
-  }
   }
 
   // display(playerTrue){
@@ -702,13 +811,13 @@ class Rocket{
       this.vehicle.respawn([this.vehicle.bumper,this.front]);
       this.vehicle.displayUI();
       if (!this.vehicle.dead){
-      this.vehicle.drive();
+        this.vehicle.drive();
       }
       this.vehicle.specialCleanup();
       this.vehicle.rip();
       if (this.vehicle.dead){
-      this.vehicle.bumper.color = "black";
-      this.vehicle.bumper.stroke = "darkgrey";
+        this.vehicle.bumper.color = "black";
+        this.vehicle.bumper.stroke = "darkgrey";
       }
     }
   }
@@ -777,7 +886,7 @@ class Car{
     this.lap = lap;
     this.lapCounter = new Sprite(0,0,60,40);
     this.lapCounter.collider = "none";
-    this.lapCounter.color = 'green';
+    this.lapCounter.color = "green";
     this.lapCounter.text = "Lap:" + this.lap + "/" + laps;
     this.dead = false;
     
@@ -894,7 +1003,7 @@ class Car{
 
   drive() {
     if ( Math.abs(this.move) > 0){
-      if((this.hanbrake === false||Math.abs(this.move) > 1.5)){
+      if(this.hanbrake === false||Math.abs(this.move) > 1.5){
 
         if (keyIsDown(65)){
           this.turn -= this.handling*toZero(this.move);
@@ -921,7 +1030,7 @@ class Car{
         this.move -= toZero(this.move)*this.braking/100;
       }
       else{
-        this.move -= this.acceleration/(60);
+        this.move -= this.acceleration/60;
       }
 
     }
@@ -1035,11 +1144,11 @@ class Spike{
     let thang = 6;
     let mode,boing;
     if (puff){
-      mode = 'dynamic';
+      mode = "dynamic";
       boing = 5;
     }
     else{
-      mode = 'static';
+      mode = "static";
       boing = 0;
     }
     this.metal = new Sprite(x*big,y*big, [
@@ -1052,7 +1161,7 @@ class Spike{
     this.metal.bounciness = boing;
     
     this.metal.rotation = rotation;
-    this.metal.layer = 0.2
+    this.metal.layer = 0.2;
     everything.push(this.metal);
     spikes.push(this.metal);
   }
@@ -1079,7 +1188,7 @@ class CheckP{
     this.spot.layer = 0;
     this.spot.rotation = angle;
     this.spot.collider = "none";
-    this.spot.color = 'grey';
+    this.spot.color = "grey";
     this.number = number;
   }
 }
@@ -1118,14 +1227,14 @@ class Bar{
   constructor(width,height,xOffset,yOffset,colour,backText,topText,inmax){
     this.back = new Sprite(0,0,width,height);
     this.back.collider = "none";
-    this.back.color = 'white';
-    this.back.stroke = 'black';
+    this.back.color = "white";
+    this.back.stroke = "black";
     this.back.layer = 4;
     this.backText = backText;
     this.progress = new Sprite(0,0,0,height);
     this.progress.collider = "none";
     this.progress.color = colour;
-    this.progress.stroke = 'black';
+    this.progress.stroke = "black";
     this.progress.layer = 5;
     this.topText = topText;
     this.width = width;
@@ -1202,7 +1311,7 @@ function makeTrack(id){
     barrier1 = new Wall(500,260,15,100,0);
     barrier2 = new Wall(225,385,15,130,0);
     barrier3 = new Wall(150,240,15,200,65);
-    barrier4 = new Wall(850,360,15,200,50)
+    barrier4 = new Wall(850,360,15,200,50);
 
     die1 = new SpWall(300,490,15,270,"hor");
     die2 = new SpWall(230,330,5,0,"vert");
