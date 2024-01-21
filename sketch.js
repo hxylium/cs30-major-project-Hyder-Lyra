@@ -14,10 +14,13 @@ let players = [];
 let back;
 let loading;
 let play;
-let cars;
+let customize;
 let tutorial;
-let choice;
 let gameState = "Initialize";
+let car;
+let track1, track2;
+let colour1, colour2, submitButton;
+let colour1chosen, colour2chosen;
 let bubble, saw, swing, sport, delor, rocket;
 
 function preload(){
@@ -32,26 +35,53 @@ function setup() {
 
 function initialization(){
   preload();
+  image(loading, 0, 0, width, height+100);
 
-  // gameState = "loading";
-
-  play = createButton("Play (With a default car)");
-  play.position(width/2-(width/6)/2, height/3);
+  // Creating buttons for the menu
+  play = createButton("Play (Default Car & Track)");
+  play.position(width/2-width/6/2, height/3);
   play.size(width/6, 60);
   play.style("background-color", "blue");
 
-  cars = createButton("Choose a Car");
-  cars.position(width/2-(width/6)/2, height-height/2);
-  cars.size(width/6, 60);
-  cars.style("background-color", "green");
+  customize = createButton("Custom");
+  customize.position(width/2-width/6/2, height-height/2);
+  customize.size(width/6, 60);
+  customize.style("background-color", "green");
 
   tutorial = createButton("Learn how to play");
-  tutorial.position(width/2-(width/6)/2, height-height/3);
+  tutorial.position(width/2-width/6/2, height-height/3);
   tutorial.size(width/6, 60);
   tutorial.style("background-color", "red");
 
 
+  // Creating buttons for the track choice
+  track1 = createButton("A proper Racing track to race on!");
+  track1.position(width/3-width/6/2, height/3);
+  track1.size(width/6, 60);
+  track1.style("background-color", "green");
 
+  track2 = createButton("A fun little obstacle avoidance track");
+  track2.position(width-width/3-width/6/2, height/3);
+  track2.size(width/6, 60);
+  track2.style("background-color", "red");
+
+
+  // Creating input fields for the colour choices of the user
+  colour1 = createInput();
+  colour1.position(width/2-width/3/2, height/3);
+  colour1.size(width/3, 30);
+
+  colour2 = createInput();
+  colour2.position(width/2-width/3/2, height/3+100);
+  colour2.size(width/3, 30);
+
+  submitButton = createButton("Submit");
+  submitButton.position(width/2-width/5/2, height-height/4);
+  submitButton.size(width/5, 30);
+  submitButton.style("background-color", "green");
+
+
+  // Creating buttons for the car choices
   bubble = createButton("Bubble Van");
   bubble.position(50, height/3);
   bubble.size(200, 60);
@@ -78,15 +108,24 @@ function initialization(){
 
 
   play.hide();
-  cars.hide();
+  customize.hide();
   tutorial.hide();
 
-  // bubble.hide();
-  // saw.hide();
-  // swing.hide();
-  // sport.hide();
-  // delor.hide();
-  // rocket.hide();
+  bubble.hide();
+  saw.hide();
+  swing.hide();
+  sport.hide();
+  delor.hide();
+  rocket.hide();
+
+  track1.hide();
+  track2.hide();
+
+  colour1.hide();
+  colour2.hide();
+  submitButton.hide();
+
+  gameState = "menu";
 }
 
 function choosingCars(){
@@ -124,14 +163,10 @@ function choosingCars(){
   text("Handling: 2.5", 806, height/3+180, width/6-60, height/3+80);
   text("Handling: 2.3", 1056, height/3+180, width/6-100, height/3+80);
   text("Handling: 2", 1306, height/3+180, width/6-29, height/3+80);
-
-
 }
 
-
 function draw() {
-  if(gameState !== "Initialize"){
-    prepareRace("BnF",Bubble,"magenta","lime");
+  if(gameState === "playing"){
     createCanvas(windowWidth, windowHeight);
     clear();
     background("lightgrey");
@@ -142,13 +177,158 @@ function draw() {
     camera.x = mid.x*big;
     camera.y = mid.y*big;
   }
-  else if(gameState === "Initialize"){
-    // image(loading, 0, 0, width, height+100);
-    choosingCars();
-  }
-  else{
+  else if(gameState === "menu"){
     startGame();
   }
+}
+
+function startGame(){
+  image(back, 0, 0, width, height+100);
+
+  play.show();
+  customize.show();
+  tutorial.show();
+
+  play.mousePressed(function() {
+    play.hide();
+    customize.hide();
+    tutorial.hide();
+
+    initializeGame("Int", Bubble, "magenta", "lime");
+  });
+
+  customize.mousePressed(function() {
+    play.hide();
+    customize.hide();
+    tutorial.hide();
+
+    chooseColor();
+  });
+}
+
+function chooseColor(){
+  image(loading, 0, 0, width, height+100);
+  gameState = "entering";
+  colour1.show();
+  colour2.show();
+  submitButton.show();
+
+  text("Plase type in a colour you would like to use for the 1st part of the car", width/2-width/3/2, height/3-12);
+  text("Plase type in a colour you would like to use for the 2nd part of the car", width/2-width/3/2, height/3+100-12);
+
+  submitButton.mousePressed(chooseTrack);
+}
+
+function chooseTrack(){
+  takeIn();
+
+  image(loading, 0, 0, width, height+100);
+  gameState = "entering";
+  colour1.hide();
+  colour2.hide();
+  submitButton.hide();
+
+  track1.show();
+  track2.show();
+
+  track1.mousePressed(function() {
+    track1.hide();
+    track2.hide();
+    setParameters("Int");
+  });
+
+  track2.mousePressed(function() {
+    track1.hide();
+    track2.hide();
+    setParameters("BnF");
+  });
+}
+
+function takeIn(){
+  colour1chosen = colour1.value();
+  colour2chosen = colour2.value();
+}
+
+function setParameters(track){
+  image(loading, 0, 0, width, height);
+  bubble.show();
+  saw.show();
+  swing.show();
+  sport.show();
+  delor.show();
+  rocket.show();
+
+  choosingCars();
+
+  bubble.mousePressed(function() {
+    bubble.hide();
+    saw.hide();
+    swing.hide();
+    sport.hide();
+    delor.hide();
+    rocket.hide();
+
+    initializeGame(track, Bubble, "magenta", "lime");
+  });
+
+  saw.mousePressed(function() {
+    bubble.hide();
+    saw.hide();
+    swing.hide();
+    sport.hide();
+    delor.hide();
+    rocket.hide();
+
+    initializeGame(track, Saw, "magenta", "lime");
+  });
+
+  swing.mousePressed(function() {
+    bubble.hide();
+    saw.hide();
+    swing.hide();
+    sport.hide();
+    delor.hide();
+    rocket.hide();
+
+    initializeGame(track, Swing, "magenta", "lime");
+  });
+
+  sport.mousePressed(function() {
+    bubble.hide();
+    saw.hide();
+    swing.hide();
+    sport.hide();
+    delor.hide();
+    rocket.hide();
+    
+    initializeGame(track, Sport, "magenta", "lime");
+  });
+  delor.mousePressed(function() {
+    bubble.hide();
+    saw.hide();
+    swing.hide();
+    sport.hide();
+    delor.hide();
+    rocket.hide();
+    
+    initializeGame(track, Delor, "magenta", "lime");
+  });
+  rocket.mousePressed(function() {
+    bubble.hide();
+    saw.hide();
+    swing.hide();
+    sport.hide();
+    delor.hide();
+    rocket.hide();
+    
+    initializeGame(track, Rocket, "magenta", "lime");
+  });
+
+}
+
+function initializeGame(trackChoice, carChoice, color1, color2){
+  prepareRace(trackChoice,carChoice, color1, color2);
+  gameState = "playing";
 }
 
 
