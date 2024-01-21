@@ -17,20 +17,22 @@ let play;
 let customize;
 let tutorial;
 let gameState = "Initialize";
-let car;
 let track1, track2;
 let colour1, colour2, submitButton;
 let colour1chosen, colour2chosen;
+let colorChosen;
 let bubble, saw, swing, sport, delor, rocket;
+let buttons = [];
 
 // colours for car customization
 let colours = ["red","darkred","pink",
-"orange","darkorange","gold","yellow",
-"green","darkgreen","lightgreen","lime",
-"blue","darkblue","navy","lightblue","turquoise",
-"purple","indigo","violet","magenta",
-"grey","darkgrey","lightgrey","white",
-"brown","tan"]; //25 different colours (not sure if navy and darkblue have any difference so it might be 24)
+  "orange","darkorange","gold","yellow",
+  "green","darkgreen","lightgreen","lime",
+  "blue","darkblue","navy","lightblue","turquoise",
+  "purple","indigo","violet","magenta",
+  "grey","darkgrey","lightgrey","white",
+  "brown","tan"];
+ 
 
 function preload(){
   back = loadImage("Background image.png");
@@ -50,70 +52,66 @@ function initialization(){
   play = createButton("Play (Default Car & Track)");
   play.position(width/2-width/6/2, height/3);
   play.size(width/6, 60);
-  play.style("background-color", "blue");
+  play.style("background-color", "yellow");
+  play.style("border-radius", "26px");
 
   customize = createButton("Custom");
   customize.position(width/2-width/6/2, height-height/2);
   customize.size(width/6, 60);
   customize.style("background-color", "green");
+  customize.style("border-radius", "26px");
 
   tutorial = createButton("Learn how to play");
   tutorial.position(width/2-width/6/2, height-height/3);
   tutorial.size(width/6, 60);
   tutorial.style("background-color", "red");
+  tutorial.style("border-radius", "26px");
 
 
   // Creating buttons for the track choice
   track1 = createButton("A proper Racing track to race on!");
   track1.position(width/3-width/6/2, height/3);
   track1.size(width/6, 60);
-  track1.style("background-color", "green");
+  track1.style("background-color", "lightgreen");
+  track1.style("border-radius", "26px");
 
   track2 = createButton("A fun little obstacle avoidance track");
   track2.position(width-width/3-width/6/2, height/3);
   track2.size(width/6, 60);
-  track2.style("background-color", "red");
-
-
-  // Creating input fields for the colour choices of the user
-  colour1 = createInput();
-  colour1.position(width/2-width/3/2, height/3);
-  colour1.size(width/3, 30);
-
-  colour2 = createInput();
-  colour2.position(width/2-width/3/2, height/3+100);
-  colour2.size(width/3, 30);
-
-  submitButton = createButton("Submit");
-  submitButton.position(width/2-width/5/2, height-height/4);
-  submitButton.size(width/5, 30);
-  submitButton.style("background-color", "green");
+  track2.style("background-color", "lightblue");
+  track2.style("border-radius", "26px");
 
 
   // Creating buttons for the car choices
   bubble = createButton("Bubble Van");
   bubble.position(50, height/3);
   bubble.size(200, 60);
+  bubble.style("border-radius", "26px");
 
   saw = createButton("Saw Car");
   saw.position(300, height/3);
   saw.size(200, 60);
+  saw.style("border-radius", "26px");
   
   swing = createButton("Swinging Car");
   swing.position(550, height/3);
   swing.size(200, 60);
+  swing.style("border-radius", "26px");
 
   sport = createButton("Sports Car");
   sport.position(800, height/3);
   sport.size(200, 60);
+  sport.style("border-radius", "26px");
 
   delor = createButton("Delor Car");
   delor.position(1050, height/3);
   delor.size(200, 60);
+  delor.style("border-radius", "26px");
 
   rocket = createButton("Rocket Car");
   rocket.position(1300, height/3);
   rocket.size(200, 60);
+  rocket.style("border-radius", "26px");
 
 
   play.hide();
@@ -130,14 +128,13 @@ function initialization(){
   track1.hide();
   track2.hide();
 
-  colour1.hide();
-  colour2.hide();
-  submitButton.hide();
-
   gameState = "menu";
 }
 
 function choosingCars(){
+  textSize(16);
+  textAlign(LEFT);
+
   text("Speciality: Creates a bouncy field around you", 56, height/3+80, width/6-60, height/3+80);
   text("Speciality: Become a saw", 306, height/3+80, width/6-56, height/3+80);
   text("Speciality: Grapple onto things", 556, height/3+80, width/6+60, height/3+80);
@@ -216,26 +213,41 @@ function startGame(){
 }
 
 function chooseColor(){
-  image(loading, 0, 0, width, height+100);
+  background(200);
   gameState = "entering";
-  colour1.show();
-  colour2.show();
-  submitButton.show();
+  textSize(20);
+  textAlign(CENTER);
+  text("Choose a color for your vehicle!", width/2, height/2);
 
-  text("Plase type in a colour you would like to use for the 1st part of the car", width/2-width/3/2, height/3-12);
-  text("Plase type in a colour you would like to use for the 2nd part of the car", width/2-width/3/2, height/3+100-12);
+  for (let i = 0; i < colours.length; i++) {
+    let buttonX = width / 3;
+    let buttonY = (i + 1) * height / (colours.length + 1);
 
-  submitButton.mousePressed(chooseTrack);
+    let button = createButton(colours[i]);
+    button.position(buttonX - button.width / 2, buttonY - button.height / 2);
+    button.style("background-color", colours[i]);
+    button.style("border-radius", "10px");
+    
+    button.mousePressed(() => {
+      colorChosen = colours[i];
+      console.log("Color chosen:", colorChosen);
+      hideColorButtons();
+    });
+
+    buttons.push(button);
+  }
+}
+
+function hideColorButtons() {
+  for (let i = 0; i < buttons.length; i++) {
+    buttons[i].hide();
+  }
+  chooseTrack();
 }
 
 function chooseTrack(){
-  takeIn();
-
   image(loading, 0, 0, width, height+100);
   gameState = "entering";
-  colour1.hide();
-  colour2.hide();
-  submitButton.hide();
 
   track1.show();
   track2.show();
@@ -243,22 +255,17 @@ function chooseTrack(){
   track1.mousePressed(function() {
     track1.hide();
     track2.hide();
-    setParameters("Int");
+    setParameters("Int", colorChosen);
   });
 
   track2.mousePressed(function() {
     track1.hide();
     track2.hide();
-    setParameters("BnF");
+    setParameters("BnF", colorChosen);
   });
 }
 
-function takeIn(){
-  colour1chosen = colour1.value();
-  colour2chosen = colour2.value();
-}
-
-function setParameters(track){
+function setParameters(track, color){
   image(loading, 0, 0, width, height);
   bubble.show();
   saw.show();
@@ -277,7 +284,7 @@ function setParameters(track){
     delor.hide();
     rocket.hide();
 
-    initializeGame(track, Bubble, "magenta", "lime");
+    initializeGame(track, Bubble, color, color);
   });
 
   saw.mousePressed(function() {
@@ -288,7 +295,7 @@ function setParameters(track){
     delor.hide();
     rocket.hide();
 
-    initializeGame(track, Saw, "magenta", "lime");
+    initializeGame(track, Saw, color, color);
   });
 
   swing.mousePressed(function() {
@@ -299,7 +306,7 @@ function setParameters(track){
     delor.hide();
     rocket.hide();
 
-    initializeGame(track, Swing, "magenta", "lime");
+    initializeGame(track, Swing, color, color);
   });
 
   sport.mousePressed(function() {
@@ -310,7 +317,7 @@ function setParameters(track){
     delor.hide();
     rocket.hide();
     
-    initializeGame(track, Sport, "magenta", "lime");
+    initializeGame(track, Sport, color, color);
   });
   delor.mousePressed(function() {
     bubble.hide();
@@ -320,7 +327,7 @@ function setParameters(track){
     delor.hide();
     rocket.hide();
     
-    initializeGame(track, Delor, "magenta", "lime");
+    initializeGame(track, Delor, color, color);
   });
   rocket.mousePressed(function() {
     bubble.hide();
@@ -330,7 +337,7 @@ function setParameters(track){
     delor.hide();
     rocket.hide();
     
-    initializeGame(track, Rocket, "magenta", "lime");
+    initializeGame(track, Rocket, color, color);
   });
 
 }
@@ -1469,19 +1476,6 @@ function toZero(number){
   return number;
   
 }
-// function smallest(){
-//   let smoll;
-//   let wide = 40;
-//   let tall = 70;
-//   if (windowHeight/wide < windowWidth/tall){
-//     smoll = windowHeight/wide;
-//   } 
-//   else{
-//     smoll = windowWidth/tall;
-//   }
-//   return smoll;
-// }
-
 
 function makeTrack(id){
   if (id === "BnF"){
