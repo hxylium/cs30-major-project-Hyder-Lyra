@@ -1,6 +1,7 @@
 let cheese;
 let dummy;
 let ratio;
+let big = 1.4;
 
 let everything = [];
 let spikes = [];
@@ -61,12 +62,6 @@ function initialization(){
   customize.style("background-color", "green");
   customize.style("border-radius", "26px");
 
-  tutorial = createButton("Learn how to play");
-  tutorial.position(width/2-width/6/2, height-height/3);
-  tutorial.size(width/6, 60);
-  tutorial.style("background-color", "red");
-  tutorial.style("border-radius", "26px");
-
 
   // Creating buttons for the track choice
   track1 = createButton("A proper Racing track to race on!");
@@ -116,7 +111,6 @@ function initialization(){
 
   play.hide();
   customize.hide();
-  tutorial.hide();
 
   bubble.hide();
   saw.hide();
@@ -129,6 +123,23 @@ function initialization(){
   track2.hide();
 
   gameState = "menu";
+}
+
+function draw() {
+  if(gameState === "playing"){
+    createCanvas(windowWidth, windowHeight);
+    clear();
+    background("lightgrey");
+    
+    cheese.docar();
+    
+    let mid = cheese.vehicle.carCenter();
+    camera.x = mid.x*big;
+    camera.y = mid.y*big;
+  }
+  else if(gameState === "menu"){
+    startGame();
+  }
 }
 
 function choosingCars(){
@@ -170,35 +181,15 @@ function choosingCars(){
   text("Handling: 2.3", 1056, height/3+180, width/6-100, height/3+80);
   text("Handling: 2", 1306, height/3+180, width/6-29, height/3+80);
 }
-
-function draw() {
-  if(gameState === "playing"){
-    createCanvas(windowWidth, windowHeight);
-    clear();
-    background("lightgrey");
-    
-    cheese.docar();
-  
-    let mid = cheese.vehicle.carCenter();
-    camera.x = mid.x*big;
-    camera.y = mid.y*big;
-  }
-  else if(gameState === "menu"){
-    startGame();
-  }
-}
-
 function startGame(){
   image(back, 0, 0, width, height+100);
 
   play.show();
   customize.show();
-  tutorial.show();
 
   play.mousePressed(function() {
     play.hide();
     customize.hide();
-    tutorial.hide();
 
     initializeGame("Int", Bubble, "magenta", "lime");
   });
@@ -206,7 +197,6 @@ function startGame(){
   customize.mousePressed(function() {
     play.hide();
     customize.hide();
-    tutorial.hide();
 
     chooseColor();
   });
@@ -1278,8 +1268,6 @@ class Car{
 
 }
 
-
-let big = 1.4;
 class Wall{
   constructor(x,y,width,height,rotation){
     this.cement = new Sprite(x*big,y*big,width*big,height*big);

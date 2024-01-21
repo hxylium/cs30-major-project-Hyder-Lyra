@@ -8,7 +8,6 @@
 - Unfortunatly not, our levels idea was a major flop, and I could not deliver on anything due to various reasons.
 
 ## The hardest part?
-- Trying to understand how web server communication works was a major hassle and this is where I should have realised that doing multiplayer would have been near impossible with the time restraints.
+- Trying to understand how web server communication works was a major hasstle and this is where I should have realised that doing multiplayer would have been near impossible with the time restraints.
 
-## Were there any problems I could not solve?
-- 
+## What did you achieve?

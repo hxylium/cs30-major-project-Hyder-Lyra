@@ -3,7 +3,6 @@
 ## What advice would I give myself?
 - ask for advice earlier on in the process so time is not spent on a dead end/harder path
 - Don't try to make fancy curves, just make bends using a single flat wall on an angle
-- 
 
 ## Was everything in needs to have completed?
 - On my end I was not able to create an AI for cars, but other then that I got everything I needed to do
