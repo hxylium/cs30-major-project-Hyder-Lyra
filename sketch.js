@@ -20,6 +20,15 @@ let choice;
 let gameState = "Initialize";
 let bubble, saw, swing, sport, delor, rocket;
 
+// colours for car customization
+let colours = ["red","darkred","pink",
+"orange","darkorange","gold","yellow",
+"green","darkgreen","lightgreen","lime",
+"blue","darkblue","navy","lightblue","turquoise",
+"purple","indigo","violet","magenta",
+"grey","darkgrey","lightgrey","white",
+"brown","tan"]; //25 different colours (not sure if navy and darkblue have any difference so it might be 24)
+
 function preload(){
   back = loadImage("Background image.png");
   loading = loadImage("loading.jpeg");
