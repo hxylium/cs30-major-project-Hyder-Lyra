@@ -10,4 +10,8 @@
 ## The hardest part?
 - Trying to understand how web server communication works was a major hasstle and this is where I should have realised that doing multiplayer would have been near impossible with the time restraints.
 
-## What did you achieve?
+## What did you achieve and learned?
+- A great and working physics enabled racing game with multiple players.
+- I learned how to use websickets to some extent which really interested me and I now know how to make some basic 2 player games is I wanted to such as Tic-Tac-Toe.
+- I learned a lot about how networking works and how the internet interacts and works so seemlessly and how advanced this technology has become.
+- I learned that servers aren't a web-application, though they can be like Heroku but just pure code, which amazed me.
