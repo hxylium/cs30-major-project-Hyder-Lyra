@@ -20,12 +20,20 @@ let starts = [];
 
 let players = [];
 
+let colours = ["red","darkred","pink",
+"orange","darkorange","gold","yellow",
+"green","darkgreen","lightgreen","lime",
+"blue","darkblue","navy","lightblue","turquoise",
+"purple","indigo","violet","magenta",
+"grey","darkgrey","lightgrey","white",
+"brown","tan"]; //25 different colours (not sure if navy and darkblue have any difference so it might be 24)
+
 
 function setup() {
   createCanvas(windowWidth, windowHeight);
   // dummy = new Delor(width/3, height/3);
   
-  prepareRace("BnF",Bubble,"magenta","lime");
+  prepareRace("BnF",Bubble,"darkgreen","lime");
   
 }
 
