@@ -45,6 +45,7 @@ function setup() {
   initialization();
 }
 
+// Function that initalizes code and ready's the buttons
 function initialization(){
   preload();
   image(back, 0, 0, width, height+100);
@@ -125,6 +126,7 @@ function initialization(){
   gameState = "menu";
 }
 
+// Main function that draws everything and runs the game
 function draw() {
   if(gameState === "playing"){
     createCanvas(windowWidth, windowHeight);
@@ -142,6 +144,7 @@ function draw() {
   }
 }
 
+// text for choosing the cars
 function choosingCars(){
   textSize(16);
   textAlign(LEFT);
@@ -182,6 +185,7 @@ function choosingCars(){
   text("Handling: 2", 1306, height/3+180, width/6-29, height/3+80);
 }
 
+// Menu starting screen for the game
 function startGame(){
   image(back, 0, 0, width, height+100);
 
@@ -203,6 +207,7 @@ function startGame(){
   });
 }
 
+// Makes buttons and text for choosing the color of the car from the pre-defined colors
 function chooseColor(){
   background(200);
   gameState = "entering";
@@ -229,6 +234,7 @@ function chooseColor(){
   }
 }
 
+// Hides all of the color buttons and calls the chooseTrack function
 function hideColorButtons() {
   for (let i = 0; i < buttons.length; i++) {
     buttons[i].hide();
@@ -236,6 +242,7 @@ function hideColorButtons() {
   chooseTrack();
 }
 
+// Makes buttons and text for choosing the track
 function chooseTrack(){
   image(back, 0, 0, width, height+100);
   gameState = "entering";
@@ -256,6 +263,7 @@ function chooseTrack(){
   });
 }
 
+// Sets the parameters for the game
 function setParameters(track, color){
   image(back, 0, 0, width, height);
   bubble.show();
@@ -333,17 +341,20 @@ function setParameters(track, color){
 
 }
 
+// Function that makes the track
 function initializeGame(trackChoice, carChoice, color1, color2){
   prepareRace(trackChoice,carChoice, color1, color2);
   gameState = "playing";
 }
 
+// Function that prepares the race by calling every funtion needed
 function prepareRace(race,carType,colourA,colourB){
   makeTrack(race);
   cheese = makeVehicle(starts[0].x,starts[0].y,1,starts[0].rotation,carType,0,colourA,colourB);
   players.push(cheese);
 }
 
+// Respawn funtion for the cars
 function respawn(checkNum,self,lap,type){
   let point = checkpoints[checkNum];
   
@@ -359,6 +370,7 @@ function respawn(checkNum,self,lap,type){
 
 }
 
+// Make the car with its properties specified by the user
 function makeVehicle(x,y,lap,rotation,type,checkpoint,colourA,colourB){
   let beep = new type(x,y,lap,rotation,checkpoint,colourA,colourB);
   beep.vehicle.dead = false;
@@ -366,6 +378,7 @@ function makeVehicle(x,y,lap,rotation,type,checkpoint,colourA,colourB){
   return beep;
 }
 
+// Bubble car class
 class Bubble{
   constructor(x,y,lap,rotation,checkpoint,colourA,colourB){
     this.type = Bubble;
@@ -480,6 +493,8 @@ class Bubble{
   }
   
 }
+
+// Saw car class
 class Saw{
   constructor(x,y,lap,rotation,checkpoint,colourA,colourB){
     this.type = Saw;
@@ -698,6 +713,8 @@ class Saw{
   }
   
 }
+
+// Swing car class
 class Swing{
   constructor(x,y,lap,rotation,checkpoint,colourA,colourB){
     this.type = Swing;
@@ -763,6 +780,8 @@ class Swing{
   }
   
 }
+
+// Sports car class
 class Sport{
   constructor(x,y,lap,rotation,checkpoint,colourA,colourB){
     this.type = Sport;
@@ -837,6 +856,8 @@ class Sport{
     }
   }
 }
+
+// Delor car class
 class Delor{
   constructor(x,y,lap,rotation,checkpoint,colourA,colourB){
     this.type = Delor;
@@ -921,6 +942,8 @@ class Delor{
   //   this.vehicle.display(playerTrue);
   // }
 }
+
+// Rocket car class
 class Rocket{
   constructor(x,y,lap,rotation,checkpoint,colourA,colourB){
     this.type = Rocket;
@@ -1010,6 +1033,7 @@ class Rocket{
 
 }
 
+// Car class
 class Car{
   constructor(x,y,lap,type,rotation,facelength,facewidth,backlength,backwidth, acceleration, maxspeed, braking, handling, thing, thing2, backText,topText, abilityTime, checkpoint, colourA, colourB, abilitycolour){
     if(rotation === 0){
@@ -1268,6 +1292,7 @@ class Car{
 
 }
 
+// Makes the wall
 class Wall{
   constructor(x,y,width,height,rotation){
     this.cement = new Sprite(x*big,y*big,width*big,height*big);
@@ -1277,6 +1302,8 @@ class Wall{
     everything.push(this.cement);
   }
 }
+
+// Makes the spikes
 class SpWall{
   constructor(x,y,amount,rotation,orientation){
     for (let i = 0; i <= amount; i++){
@@ -1291,6 +1318,8 @@ class SpWall{
     }
   }
 }
+
+// Makes the glue joints
 class Bend{
   constructor(x,y,size,angle,start, value, spikes){
     // this.cement = new Sprite(x*big, y*big, [1, -10, size*big, 1, angle]);
@@ -1322,6 +1351,8 @@ class Bend{
     
   }
 }
+
+// Makes the glue joints
 class Spike{
   constructor(x,y,rotation,puff){
     let thing = 20;
@@ -1351,11 +1382,13 @@ class Spike{
   }
 }
 
-
+// Makes the glue joints
 function makecheckP(x,y,angle,list,size){
   let checker = new CheckP(x,y,angle,list.length,size);
   list.push(checker);
 }
+
+//Checks for the spikes if collided
 class CheckP{
   constructor(x,y,angle,number,size){
     this.x = x;
@@ -1376,9 +1409,12 @@ class CheckP{
     this.number = number;
   }
 }
+
 function makeSM(x,y,angle,list){
   list.push(new startMark(x,y,angle));
 }
+
+// Makes the start marks
 class startMark{
   constructor(x,y,rotation){
     this.x = x ;
@@ -1407,6 +1443,7 @@ class startMark{
   }
 }
 
+// Makes the bar
 class Bar{
   constructor(width,height,xOffset,yOffset,colour,backText,topText,inmax){
     this.back = new Sprite(0,0,width,height);
@@ -1457,6 +1494,7 @@ class Bar{
 
 }
 
+// Rests counters
 function toZero(number){
   if (number !== 0){
     return number/Math.abs(number);
@@ -1465,6 +1503,7 @@ function toZero(number){
   
 }
 
+// Makes the track
 function makeTrack(id){
   if (id === "BnF"){
     let wall1,wall2,wall3,wall4;
