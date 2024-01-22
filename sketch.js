@@ -47,7 +47,7 @@ function setup() {
 
 function initialization(){
   preload();
-  image(loading, 0, 0, width, height+100);
+  image(back, 0, 0, width, height+100);
 
   // Creating buttons for the menu
   play = createButton("Play (Default Car & Track)");
@@ -181,6 +181,7 @@ function choosingCars(){
   text("Handling: 2.3", 1056, height/3+180, width/6-100, height/3+80);
   text("Handling: 2", 1306, height/3+180, width/6-29, height/3+80);
 }
+
 function startGame(){
   image(back, 0, 0, width, height+100);
 
@@ -236,7 +237,7 @@ function hideColorButtons() {
 }
 
 function chooseTrack(){
-  image(loading, 0, 0, width, height+100);
+  image(back, 0, 0, width, height+100);
   gameState = "entering";
 
   track1.show();
@@ -256,7 +257,7 @@ function chooseTrack(){
 }
 
 function setParameters(track, color){
-  image(loading, 0, 0, width, height);
+  image(back, 0, 0, width, height);
   bubble.show();
   saw.show();
   swing.show();
@@ -336,7 +337,6 @@ function initializeGame(trackChoice, carChoice, color1, color2){
   prepareRace(trackChoice,carChoice, color1, color2);
   gameState = "playing";
 }
-
 
 function prepareRace(race,carType,colourA,colourB){
   makeTrack(race);
