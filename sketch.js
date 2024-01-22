@@ -1,8 +1,10 @@
+//Deifnes necessary variables for the cars
 let cheese;
 let dummy;
 let ratio;
 let big = 1.4;
 
+// Defines all the lists needed for the physics for the cars
 let everything = [];
 let spikes = [];
 let laps = 3;
@@ -12,6 +14,7 @@ let checkpoints = [];
 let starts = [];
 let players = [];
 
+// Defines variables for the menu screens
 let back;
 let loading;
 let play;
@@ -25,7 +28,7 @@ let colorChosen;
 let bubble, saw, swing, sport, delor, rocket;
 let buttons = [];
 
-// colours for car customization
+// Colours for car customization
 let colours = ["red","darkred","pink",
   "orange","darkorange","gold","yellow",
   "green","darkgreen","lightgreen","lime",
@@ -35,11 +38,13 @@ let colours = ["red","darkred","pink",
   "brown","tan"];
  
 
+// Preloads the background image
 function preload(){
   back = loadImage("Background image.png");
   loading = loadImage("loading.jpeg");
 }
 
+// Initial setup function
 function setup() {
   createCanvas(windowWidth, windowHeight);
   initialization();
